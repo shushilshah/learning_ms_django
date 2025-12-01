@@ -4,7 +4,7 @@ from courses.models import Course, Enrollment, Lesson, LessonProgress, Module
 from django.utils import timezone
 
 
-# @login_required
+@login_required
 def course_list(request):
     courses = Course.objects.filter(is_published=True)
     user_enrollments = Enrollment.objects.filter(
@@ -26,7 +26,7 @@ def course_list(request):
     return render(request, 'course/course_list.html', {'courses': courses})
 
 
-# @login_required
+@login_required
 def course_detail(request, course_id):
     course = Course.objects.get(id=course_id, is_published=True)
     enrollment = Enrollment.objects.filter(
@@ -55,7 +55,7 @@ def course_detail(request, course_id):
     return render(request, 'course/course_detail.html', context)
 
 
-# @login_required
+@login_required
 def module_detail(request, module_id):
     module = Module.objects.get(id=module_id, is_published=True)
     lessons = module.lessons.filter(is_published=True)
@@ -75,7 +75,7 @@ def module_detail(request, module_id):
     return render(request, 'course/module_detail.html', context)
 
 
-# @login_required
+@login_required
 def lesson_detail(request, lesson_id):
     lesson = Lesson.objects.get(id=lesson_id, is_published=True)
     course = lesson.module.course
@@ -117,7 +117,7 @@ def lesson_detail(request, lesson_id):
     return render(request, 'course/lesson_detail.html', context)
 
 
-# @login_required
+@login_required
 def enroll_course(request, course_id):
     course = Course.objects.get(id=course_id, is_published=True)
     prerequisties = course.prerequistes.all()
@@ -146,7 +146,7 @@ def enroll_course(request, course_id):
     return redirect('course_detail', course_id=course_id)
 
 
-# @login_required
+@login_required
 def learning_dashboard(request):
     user_enrollments = Enrollment.objects.filter(
         user=request.user, is_active=True).select_related('course')

@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from courses import views
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -27,5 +28,7 @@ urlpatterns = [
          views.course_detail, name='course_detail'),
     path('lessons/<int:lesson_id>/', views.lesson_detail, name='lesson_detail'),
     path('module/<int:module_id>/', views.module_detail, name='module_detail'),
+    path("accounts/login/",
+         auth_views.LoginView.as_view(template_name='login.html'), name='login')
 
 ]

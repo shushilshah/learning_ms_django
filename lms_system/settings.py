@@ -28,6 +28,10 @@ DEBUG = True
 ALLOWED_HOSTS = ["learning-ms-django.onrender.com"]
 
 
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+
+
 # Application definition
 
 INSTALLED_APPS = [
