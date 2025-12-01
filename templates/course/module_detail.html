@@ -1,0 +1,12 @@
+<h1>{{ module.title }}</h1>
+
+<h3>Lessons</h3>
+<ol>
+  {% for lesson in lessons %}
+  <li>
+    <a href="{% url 'lesson_detail' lesson.id %}"> {{ lesson.title }} </a>
+  </li>
+  {% endfor %}
+</ol>
+
+<a href="{% url 'course_detail' course.id %}">Back to Course</a>

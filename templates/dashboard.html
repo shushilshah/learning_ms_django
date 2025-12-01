@@ -1,0 +1,13 @@
+<h1>Dashboard</h1>
+{% for item in courses_progress %}
+<h3>{{ item.course.title }}</h3>
+
+<p>
+  {{ item.completed_lessons }} of {{ item.total_lessons }} lessons completed
+</p>
+
+<p>Progress: {{ item.progress_percentage|floatformat:0 }}%</p>
+
+<a href="{% url 'course_detail' item.course.id %}">Open Course</a>
+<hr />
+{% endfor %}

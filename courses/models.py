@@ -1,0 +1,106 @@
+from django.db import models
+
+# Create your models here.
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+# from django.core.validators import
+
+# Course class
+
+
+class Course(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    instructor = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='courses_taught')
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_published = models.BooleanField(default=False)
+    prerequistes = models.ManyToManyField(
+        'self', symmetrical=False, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Module(models.Model):
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name='modules')
+    title = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=0)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.course.title} - {self.title}"
+
+
+class Lesson(models.Model):
+    LESSON_TYPES = (
+        ('video', 'Video'),
+        ('text', 'Text'),
+        ('html', "HTML Text"),
+        ('pdf', "PDF/Document"),
+        ('external', 'External Link'),
+    )
+
+    module = models.ForeignKey(
+        Module, on_delete=models.CASCADE, related_name='lessons')
+    title = models.CharField(max_length=200)
+    lesson_type = models.CharField(max_length=20, choices=LESSON_TYPES)
+    content = models.TextField(blank=True)
+    video_url = models.URLField(blank=True)
+    document_file = models.FileField(upload_to='lessons_doc/', blank=True)
+    external_link = models.URLField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_published = models.BooleanField(default=False)
+    duration_minutes = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.module.title} - {self.title}"
+
+
+class Enrollment(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="enrollments")
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    valid_until = models.DateTimeField(null=True, blank=True)
+    enrollment_type = models.CharField(max_length=20, choices=[(
+        'manual', 'Manual'), ('auto', "Automatic",)], default='manual')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ['user', 'course']
+
+    def is_valid(self):
+        if not self.is_active:
+            return False
+        if self.valid_until and timezone.now() > self.valid_until:
+            return False
+        return True
+
+
+class LessonProgress(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='lesson_progress')
+    lesson = models.ForeignKey(
+        Lesson, on_delete=models.CASCADE, related_name='progress')
+    is_completed = models.BooleanField(default=False)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    time_spent_minutes = models.PositiveIntegerField(default=0)
+    last_accessed = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'lesson']

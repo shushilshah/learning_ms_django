@@ -1,0 +1,26 @@
+{% comment %}
+<h1>{{ course.title }}</h1>
+
+{% if enrollment %}
+<p>You are enrolled.</p>
+<a href="{% url 'lesson_detail' course.id %}">Explore</a>
+{% else %}
+<p>You are not enrolled.</p>
+<a href="{% url 'lesson_detail' course.id %}">Enroll Now</a>
+{% endif %} {% endcomment %}
+
+<h1>
+  {{ course.title }}
+  <h1>
+    {% if enrollment %}
+    <h2>Course Modules</h2>
+    <ol>
+      {% for module in modules %}
+      <li>
+      <a href="{% url 'module_detail' module.id %}">
+        {{ module.title }}
+      {% endfor %} {% endif %}
+      </li>
+    </ol>
+  </h1>
+</h1>
