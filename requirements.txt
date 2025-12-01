@@ -1,3 +1,9 @@
+
+cython>=3.0.0
+setuptools>=70.0.0
+wheel>=0.40.0
+
+
 absl-py==2.1.0
 acres==0.2.0
 aiohappyeyeballs==2.4.4
@@ -568,7 +574,3 @@ yfinance==0.2.31
 youtube-transcript-api==0.6.2
 zipp==3.15.0
 zstandard==0.23.0
-
-
-cython>=3.0.0
-setuptools>=70.0.0
