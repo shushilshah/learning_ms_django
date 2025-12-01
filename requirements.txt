@@ -3,7 +3,7 @@ cython>=3.0.0
 setuptools>=70.0.0
 wheel>=0.40.0
 
-
+pillow
 absl-py==2.1.0
 acres==0.2.0
 aiohappyeyeballs==2.4.4
