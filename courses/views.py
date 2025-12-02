@@ -357,8 +357,8 @@ def enroll_course(request, course_id):
 
 def learning_dashboard(request):
     # Check if user is authenticated
-    if not request.user.is_authenticated:
-        return redirect('login')
+    # if not request.user.is_authenticated:
+    #     return redirect('login')
 
     user_enrollments = Enrollment.objects.filter(
         user=request.user, is_active=True).select_related('course')
