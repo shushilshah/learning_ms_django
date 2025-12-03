@@ -225,8 +225,9 @@ def course_detail(request, course_id):
         # Redirect to login or show limited view
         return redirect('login')  # Or render a public preview page
 
-    enrollment = Enrollment.objects.filter(
-        user=request.user, course=course, is_active=True).first()
+    # enrollment = Enrollment.objects.filter(
+    #     user=request.user, course=course, is_active=True).first()
+    enrollment = None
 
     # if not enrollment or not enrollment.is_valid():
     #     return redirect('course_list')

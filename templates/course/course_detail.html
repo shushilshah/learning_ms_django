@@ -1,30 +1,18 @@
-{% comment %}
 <h1>{{ course.title }}</h1>
+
+<h2>Course Modules</h2>
+<ol>
+  {% for module in modules %}
+  <li>
+    <a href="{% url 'module_detail' module.id %}"> {{ module.title }} </a>
+  </li>
+  {% empty %}
+  <li>No modules available.</li>
+  {% endfor %}
+</ol>
 
 {% if enrollment %}
-<p>You are enrolled.</p>
-<a href="{% url 'lesson_detail' course.id %}">Explore</a>
+<p>Your progress: {{ progress_percentage|floatformat:0 }}%</p>
 {% else %}
-<p>You are not enrolled.</p>
-<a href="{% url 'lesson_detail' course.id %}">Enroll Now</a>
-{% endif %} {% endcomment %}
-
-<h1>{{ course.title }}</h1>
-<h1>
-  {% if enrollment %}
-  <h2>Course Modules</h2>
-  <ol>
-    {% for module in modules %}
-    <li>
-      <a href="{% url 'module_detail' module.id %}"> {{ module.title }} </a>
-    </li>
-    {% empty %}
-    <li>No modules added for this course yet.</li>
-    {% endfor %}
-  </ol>
-  {% else %}
-  <p>You are nor enrolled in this course.</p>
-  <a href="{% url 'enroll_course' course.id %}">Enroll Now</a>
-
-  {% endif %}
-</h1>
+<p>Login to track your progress.</p>
+{% endif %}
