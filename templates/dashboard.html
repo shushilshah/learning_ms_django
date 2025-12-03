@@ -1,5 +1,5 @@
 <h1>Dashboard</h1>
-{% for item in courses_progress %}
+{% for item in courses_progress %} {% if item %}
 <h3>{{ item.course.title }}</h3>
 
 <p>
@@ -10,4 +10,10 @@
 
 <a href="{% url 'course_detail' item.course.id %}">Open Course</a>
 <hr />
-{% endfor %}
+{% endfor %} {% else %}
+<p>You are not enrolled in any courses yet.</p>
+<h2>Click to explore the courses</h2>
+<button>
+  <a href="{% url 'course_list' %}">Explore</a>
+</button>
+{% endif %}
