@@ -104,3 +104,49 @@ class LessonProgress(models.Model):
 
     class Meta:
         unique_together = ['user', 'lesson']
+
+
+class Quiz(models.Model):
+    title = models.CharField(max_length=200)
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name='quizzes', null=True, blank=True)
+    module = models.ForeignKey(
+        Module, on_delete=models.CASCADE, related_name='quizzes', null=True, blank=True)
+    description = models.TextField(blank=True)
+    time_limit_minutes = models.PositiveIntegerField(null=True, blank=True)
+    passing_score = models.PositiveIntegerField(default=50)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Question(models.Model):
+    QUESTION_TYPES = (
+        ('mcq', 'Multiple Choice'),
+        ('true_false', 'True/False'),
+    )
+    quiz = models.ForeignKey(
+        Quiz, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.TextField()
+    question_type = models.CharField(max_length=20, choices=QUESTION_TYPES)
+    order = models.PositiveIntegerField(default=0)
+    points = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.quiz.title} - {self.order}"
+
+
+class Choice(models.Model):
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name='choices')
+    choice_text = models.CharField(max_length=400)
+    is_correct = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']

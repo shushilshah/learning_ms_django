@@ -183,8 +183,9 @@
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from courses.models import Course, Enrollment, Lesson, LessonProgress, Module
+from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt
 from django.utils import timezone
+from django.http import JsonResponse
 
 
 def course_list(request):
@@ -320,6 +321,70 @@ def lesson_detail(request, lesson_id):
     }
 
     return render(request, 'course/lesson_detail.html', context)
+
+
+def mark_lesson_complete(request, lesson_id):
+    if request.method == 'POST':
+        lesson = Lesson.objects.get(id=lesson_id)
+        progress, created = LessonProgress.objects.get_or_create(
+            user=request.user, lesson=lesson)
+
+        if not progress.is_completed:
+            progress.is_completed = True
+            progress.completed_at = timezone.now()
+            progress.save()
+
+        return JsonResponse({'status': 'success'})
+
+    return JsonResponse({'status': 'error'})
+
+
+@login_required
+def update_time_spent(request, lesson_id):
+    if request.method == 'POST':
+        lesson = Lesson.objects.get(id=lesson_id)
+        time_spent = request.POST.get('time_spent', 0)
+
+        try:
+            progress, created = LessonProgress.objects.get_or_create(
+                user=request.user, lesson=lesson)
+            progress.time_spent_minutes += int(time_spent)
+            progress.save()
+
+            return JsonResponse({'status': 'success'})
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid time value'})
+
+    return JsonResponse({'status': 'error'})
+
+
+@login_required
+def take_quiz(request, quiz_id):
+    quiz = Quiz.objects.get(id=quiz_id, is_published=True)
+
+    # if user is enrolled in course or not
+    if quiz.course:
+        enrollment = Enrollment.objects.get(
+            user=request.user, course=quiz.course, is_active=True)
+        if not enrollment.is_valid():
+            return redirect('course_list')
+
+    # check for exsting active attempt
+    active_attempt = QuizAttempt.objects.filter(
+        user=request.user, quiz=quiz, completed_at__isnull=True).first()
+
+    if not active_attempt:
+        active_attempt = QuizAttempt.objects.create(
+            user=request.user, quiz=quiz)
+
+    questions = quiz.questions.all().prefetch_related('choices')
+
+    context = {
+        'quiz': quiz,
+        'questions': questions,
+        'attempt': active_attempt,
+    }
+    return render(request, 'quizzes/take_quiz.html', context)
 
 
 def enroll_course(request, course_id):
