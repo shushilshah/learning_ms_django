@@ -2,7 +2,9 @@
 
 <ul>
   {% for course in courses %}
-  <li>{{ course.title }}</li>
+  <li>
+    <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
+  </li>
   {% empty %}
   <li>No courses available</li>
   {% endfor %}
