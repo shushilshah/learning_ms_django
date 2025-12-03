@@ -150,3 +150,14 @@ class Choice(models.Model):
 
     class Meta:
         ordering = ['order']
+
+
+class QuizAttempt(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='quiz_attempts')
+    quiz = models.ForeignKey(
+        Quiz, on_delete=models.CASCADE, related_name='attempts')
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    score = models.FloatField(null=True, blank=True)
+    is_passed = models.BooleanField(default=False)
