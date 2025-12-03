@@ -1,10 +1,10 @@
 <h1>Available Courses</h1>
 
 <ul>
-  {% for course in courses %}
+  {% for item in courses %}
   <li>
     <h2>
-    <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
+    <a href="{% url 'course_detail' item.course.id %}"> {{ course.title }} </a>
     <h2>
   </li>
   <br>

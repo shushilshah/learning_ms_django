@@ -24,7 +24,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.learning_dashboard, name="learning_dashboard"),
     path('course/', views.course_list, name='course_list'),
-    path('course_modules/<int:course_id>/',
+    path('course/<int:course_id>/',
          views.course_detail, name='course_detail'),
     path('lessons/<int:lesson_id>/', views.lesson_detail, name='lesson_detail'),
     path('module/<int:module_id>/', views.module_detail, name='module_detail'),
