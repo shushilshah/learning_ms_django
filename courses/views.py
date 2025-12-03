@@ -220,10 +220,10 @@ def course_list(request):
 def course_detail(request, course_id):
     course = Course.objects.get(id=course_id, is_published=True)
 
-    # Check if user is authenticated
-    if not request.user.is_authenticated:
-        # Redirect to login or show limited view
-        return redirect('login')  # Or render a public preview page
+    # # Check if user is authenticated
+    # if not request.user.is_authenticated:
+    #     # Redirect to login or show limited view
+    #     return redirect('login')  # Or render a public preview page
 
     enrollment = Enrollment.objects.filter(
         user=request.user, course=course, is_active=True).first()
