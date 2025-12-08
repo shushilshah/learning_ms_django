@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Module, Enrollment, Lesson, LessonProgress
+from .models import Course, Module, Enrollment, Lesson, LessonProgress, Quiz, Question, Choice, QuizAttempt
 # Register your models here.
 
 
@@ -11,6 +11,11 @@ class LessonInline(admin.TabularInline):
 class ModuleInline(admin.TabularInline):
     model = Module
     extra = 1
+
+
+class ChoiceInline(admin.TabularInline):
+    model = Choice
+    extra = 4
 
 
 @admin.register(Course)
@@ -42,7 +47,26 @@ class LessonAdmin(admin.ModelAdmin):
     list_filter = ['lesson_type', 'is_published', 'module__course']
 
 
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = ['title', 'course', 'module',
+                    'passing_score', 'is_published']
+    list_filter = ['is_published']
+
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ['question_text', 'quiz', 'question_type', 'points']
+    inlines = [ChoiceInline]
+
+
 @admin.register(LessonProgress)
 class LessonProgressAdmin(admin.ModelAdmin):
     list_display = ['user', 'lesson', 'is_completed', 'last_accessed']
     list_filter = ['is_completed']
+
+
+@admin.register(QuizAttempt)
+class QuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ['user', 'quiz', 'score', 'is_passed', 'started_at']
+    list_filter = ['is_passed']

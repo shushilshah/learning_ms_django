@@ -161,3 +161,24 @@ class QuizAttempt(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     score = models.FloatField(null=True, blank=True)
     is_passed = models.BooleanField(default=False)
+
+
+class QuestionResponse(models.Model):
+    attempt = models.ForeignKey(
+        QuizAttempt, on_delete=models.CASCADE, related_name='responses')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_choices = models.ManyToManyField(Choice, blank=True)
+    is_correct = models.BooleanField(default=False)
+
+    def evaluate_response(self):
+        if self.question.question_type == 'true_false':
+            selected_choice = self.selected_choices.first()
+            if selected_choice:
+                self.is_correct = selected_choice.is_correct
+        else:
+            correct_choices = set(self.question.choices.filter(
+                is_correct=True).values_list('id', flat=True))
+            selected_choices = set(
+                self.selected_choices.values_list('id', flat=True))
+            self.is_correct = correct_choices == selected_choices
+        self.save()

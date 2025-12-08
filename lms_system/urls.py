@@ -18,11 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from courses import views
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.learning_dashboard, name="learning_dashboard"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path('course/', views.course_list, name='course_list'),
     path('course/<int:course_id>/',
          views.course_detail, name='course_detail'),
@@ -31,5 +34,14 @@ urlpatterns = [
     # path("accounts/login/",
     #      auth_views.LoginView.as_view(template_name='login.html'), name='login')
     path('accounts/', include('django.contrib.auth.urls')),
+    path('quiz/<int:quiz_id>/', views.take_quiz, name='take_quiz'),
+    path('quiz/attempt/<int:attempt_id>/submit/',
+         views.submit_quiz, name='submit_quiz'),
+    path('quiz/attempt/<int:attempt_id>/result/',
+         views.quiz_result, name='quiz_result'),
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
