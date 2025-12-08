@@ -1,0 +1,133 @@
+{% extends 'base.html' %} {% block title %}{{ quiz.title }} - Quiz{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">{{ quiz.title }}</h4>
+            {% if quiz.time_limit_minutes %}
+            <div id="timer" class="badge bg-warning text-dark fs-6"></div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card-body">
+          {% if quiz.description %}
+          <div class="alert alert-info">{{ quiz.description }}</div>
+          {% endif %}
+
+          <div class="alert alert-light">
+            <small>
+              <i class="fas fa-info-circle"></i>
+              Passing score: {{ quiz.passing_score }}% | Questions: {{
+              questions.count }} | {% if quiz.time_limit_minutes %} Time limit:
+              {{ quiz.time_limit_minutes }} minutes {% else %} No time limit {%
+              endif %}
+            </small>
+          </div>
+
+          <form
+            method="post"
+            action="{% url 'submit_quiz' attempt.id %}"
+            id="quizForm"
+          >
+            {% csrf_token %} {% for question in questions %}
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  Question {{ forloop.counter }}
+                  <span class="badge bg-secondary float-end"
+                    >{{ question.points }} point{{ question.points|pluralize
+                    }}</span
+                  >
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="card-text">{{ question.question_text }}</p>
+
+                {% if question.question_type == 'true_false' %}
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="question_{{ question.id }}"
+                    id="q{{ question.id }}_true"
+                    value="true"
+                  />
+                  <label class="form-check-label" for="q{{ question.id }}_true">
+                    True
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="question_{{ question.id }}"
+                    id="q{{ question.id }}_false"
+                    value="false"
+                  />
+                  <label
+                    class="form-check-label"
+                    for="q{{ question.id }}_false"
+                  >
+                    False
+                  </label>
+                </div>
+                {% else %} {% for choice in question.choices.all %}
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="{% if question.question_type == 'mcq_single' %}radio{% else %}checkbox{% endif %}"
+                    name="question_{{ question.id }}"
+                    id="choice_{{ choice.id }}"
+                    value="{{ choice.id }}"
+                  />
+                  <label class="form-check-label" for="choice_{{ choice.id }}">
+                    {{ choice.choice_text }}
+                  </label>
+                </div>
+                {% endfor %} {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-paper-plane"></i> Submit Quiz
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %} {% if quiz.time_limit_minutes %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const timeLimit = {{ quiz.time_limit_minutes }} * 60; // Convert to seconds
+      let timeLeft = timeLimit;
+      const timerElement = document.getElementById('timer');
+      const quizForm = document.getElementById('quizForm');
+
+      function updateTimer() {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+          if (timeLeft <= 0) {
+              clearInterval(timerInterval);
+              alert('Time is up! Submitting your quiz...');
+              quizForm.submit();
+          }
+
+          timeLeft--;
+      }
+
+      updateTimer(); // Initial call
+      const timerInterval = setInterval(updateTimer, 1000);
+  });
+</script>
+{% endif %} {% endblock %}

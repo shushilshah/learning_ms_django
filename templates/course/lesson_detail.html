@@ -1,1 +1,59 @@
 <h1>{{ lesson.title }}</h1>
+
+<p>
+  Module: {{ lesson.module.title }} | Duration: {{ lesson.duration_minutes }}
+  minutes
+</p>
+
+<hr />
+
+<!-- Show content based on lesson type -->
+{% if lesson.lesson_type == "text" %}
+<div>
+  <p>{{ lesson.content|linebreaks }}</p>
+</div>
+
+{% elif lesson.lesson_type == "video" %}
+<div>
+  <iframe
+    width="800"
+    height="450"
+    src="{{ lesson.video_url }}"
+    frameborder="0"
+    allowfullscreen
+  >
+  </iframe>
+</div>
+
+{% elif lesson.document_file %}
+<div>
+  <a href="{{ lesson.document_file.url }}" target="_blank">
+    📄 Download/View Document
+  </a>
+</div>
+
+{% elif lesson.lesson_type == "external" %}
+<div>
+  <a href="{{ lesson.external_url }}" target="_blank">
+    🌐 Open External Resource
+  </a>
+</div>
+{% endif %}
+
+<hr />
+
+<!-- Navigation -->
+<div style="margin-top: 20px">
+  {% if previous_lesson %}
+  <a href="{% url 'lesson_detail' previous_lesson.id %}">← Previous Lesson</a>
+  {% endif %} {% if next_lesson %}
+  <a href="{% url 'lesson_detail' next_lesson.id %}" style="float: right"
+    >Next Lesson →</a
+  >
+  {% endif %}
+</div>
+
+<hr />
+
+<!-- Progress Info -->
+<p>Last accessed: {{ progress.last_accessed }}</p>

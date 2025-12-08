@@ -1,12 +1,65 @@
-<h1>{{ module.title }}</h1>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        background: #f4f4f4;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: black;
+        margin-bottom: 30px;
+      }
+      h3 {
+        text-align: center;
+        margin-top: 10px;
+      }
 
-<h3>Lessons</h3>
-<ol>
-  {% for lesson in lessons %}
-  <li>
-    <a href="{% url 'lesson_detail' lesson.id %}"> {{ lesson.title }} </a>
-  </li>
-  {% endfor %}
-</ol>
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+      }
 
-<a href="{% url 'course_detail' course.id %}">Back to Course</a>
+      .lessons {
+        background: #3f94f5ff;
+        padding: 20px;
+        border-radius: 12px;
+        width: 250px;
+        height: 80px;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s;
+        margin-top: 40px;
+      }
+
+      .lessons:hover {
+        transform: translateY(-5px);
+      }
+
+      .lessons a {
+        align-items: center;
+        text-decoration: none;
+        color: white;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Module: {{ module.title}}</h1>
+    <h3>Available Lessons</h3>
+    <div class="container">
+      {% for lesson in lessons %}
+      <div class="lessons">
+        <a href="{% url 'lesson_detail' lesson.id %}">{{ lesson.title}}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>
