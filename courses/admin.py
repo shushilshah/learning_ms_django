@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Module, Enrollment, Lesson, LessonProgress, Quiz, Question, Choice, QuizAttempt
+from .models import *
 # Register your models here.
 
 
@@ -70,3 +70,6 @@ class LessonProgressAdmin(admin.ModelAdmin):
 class QuizAttemptAdmin(admin.ModelAdmin):
     list_display = ['user', 'quiz', 'score', 'is_passed', 'started_at']
     list_filter = ['is_passed']
+
+
+admin.site.register(Notes)

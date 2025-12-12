@@ -46,7 +46,7 @@ class Lesson(models.Model):
         ('text', 'Text'),
         ('html', "HTML Text"),
         ('pdf', "PDF/Document"),
-        ('external', 'External Link'),
+        ('link', 'External Link'),
     )
 
     module = models.ForeignKey(
@@ -57,9 +57,11 @@ class Lesson(models.Model):
     video_url = models.URLField(blank=True)
     document_file = models.FileField(upload_to='lessons_doc/', blank=True)
     external_link = models.URLField(blank=True)
+    transcripts = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
     is_published = models.BooleanField(default=False)
     duration_minutes = models.PositiveIntegerField(default=0)
+    attachments = models.FileField(upload_to="lesson_downloads/", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -102,8 +104,20 @@ class LessonProgress(models.Model):
     time_spent_minutes = models.PositiveIntegerField(default=0)
     last_accessed = models.DateTimeField(auto_now=True)
 
+    # resume to continue functions
+    resume_time = models.FloatField(default=0)  # for video contnnt
+    last_read_position = models.PositiveIntegerField(
+        default=0)  # for text content
+
     class Meta:
         unique_together = ['user', 'lesson']
+
+
+class Notes(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    note = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Quiz(models.Model):

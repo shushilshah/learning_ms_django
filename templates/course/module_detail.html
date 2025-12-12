@@ -3,63 +3,186 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Module Lessons</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      /* Base */
       body {
-        background: #f4f4f4;
-        font-family: Arial, sans-serif;
-        padding: 20px;
-      }
-      h1 {
-        text-align: center;
-        color: black;
-        margin-bottom: 30px;
-      }
-      h3 {
-        text-align: center;
-        margin-top: 10px;
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: #f2f6fb;
+        color: #1f2937;
       }
 
+      /* Header */
+      .header {
+        text-align: center;
+        padding: 50px 20px 20px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #111827;
+      }
+
+      .header h3 {
+        font-weight: 400;
+        color: #4b5563;
+        font-size: 1.2rem;
+      }
+
+      /* Grid container */
       .container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
       }
 
-      .lessons {
-        background: #3f94f5ff;
-        padding: 20px;
-        border-radius: 12px;
-        width: 250px;
-        height: 80px;
-        text-align: center;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-        transition: transform 0.2s;
-        margin-top: 40px;
+      /* Lesson Card */
+      .lesson-card {
+        position: relative;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 25px 20px 60px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+        cursor: pointer;
       }
 
-      .lessons:hover {
-        transform: translateY(-5px);
+      .lesson-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(135deg, #3b82f6, #6366f1, #f43f5e, #10b981);
+        opacity: 0.1;
+        transform: rotate(25deg);
+        pointer-events: none;
       }
 
-      .lessons a {
-        align-items: center;
+      .lesson-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Lesson title */
+      .lesson-card a {
         text-decoration: none;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #111827;
+        display: block;
+        margin-bottom: 15px;
+        z-index: 1;
+        position: relative;
+      }
+
+      /* Badge / labels */
+      .badge {
+        background: #f43f5e;
         color: white;
-        font-size: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 12px;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 2;
+      }
+
+      /* Lesson info footer */
+      .lesson-footer {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1;
+      }
+
+      /* Progress bar */
+      .progress-bar {
+        flex-grow: 1;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-left: 10px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #6366f1);
+        width: 0%;
+        border-radius: 10px;
+        transition: width 0.8s ease;
+      }
+
+      /* Lesson meta */
+      .meta {
+        font-size: 0.85rem;
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      @media (max-width: 600px) {
+        .header h1 {
+          font-size: 2rem;
+        }
+        .header h3 {
+          font-size: 1rem;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Module: {{ module.title}}</h1>
-    <h3>Available Lessons</h3>
+    <div class="header">
+      <h1>{{ module.title }}</h1>
+      <h3>Available Lessons</h3>
+    </div>
+
     <div class="container">
       {% for lesson in lessons %}
-      <div class="lessons">
-        <a href="{% url 'lesson_detail' lesson.id %}">{{ lesson.title}}</a>
+      <div class="lesson-card">
+        {% if lesson.is_new %}
+        <span class="badge">New</span>
+        {% endif %}
+        <a href="{% url 'lesson_detail' lesson.id %}">{{ lesson.title }}</a>
+        <div class="lesson-footer">
+          <span class="meta">{{ lesson.duration|default:"10 min" }}</span>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              style="width: {{ lesson.progress|default:0 }}%;"
+            ></div>
+          </div>
+        </div>
       </div>
       {% endfor %}
     </div>
+
+    <script>
+      // Animate progress bars
+      document.querySelectorAll(".progress-fill").forEach((bar) => {
+        const width = bar.style.width;
+        bar.style.width = "0%";
+        setTimeout(() => (bar.style.width = width), 100);
+      });
+    </script>
   </body>
 </html>
