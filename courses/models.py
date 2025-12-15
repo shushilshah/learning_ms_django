@@ -4,9 +4,6 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-# from django.core.validators import
-
-# Course class
 
 
 class Course(models.Model):
@@ -54,8 +51,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=200)
     lesson_type = models.CharField(max_length=20, choices=LESSON_TYPES)
     content = models.TextField(blank=True)
-    video_url = models.URLField(blank=True)
-    document_file = models.FileField(upload_to='lessons_doc/', blank=True)
+    video_url = models.FileField(blank=True)
     external_link = models.URLField(blank=True)
     transcripts = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)

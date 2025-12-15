@@ -1,59 +1,121 @@
-<h1>{{ lesson.title }}</h1>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ lesson.title }} | {{ course.title }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <p>Course:</p>
+      <h2>{{ course.title }}</h2>
 
-<p>
-  Module: {{ lesson.module.title }} | Duration: {{ lesson.duration_minutes }}
-  minutes
-</p>
+      <p>Module:</p>
+      <h3>{{ module.title }}</h3>
+    </header>
 
-<hr />
+    <hr />
 
-<!-- Show content based on lesson type -->
-{% if lesson.lesson_type == "text" %}
-<div>
-  <p>{{ lesson.content|linebreaks }}</p>
-</div>
+    <!-- ===================== -->
+    <!-- Lesson Content Area -->
+    <!-- ===================== -->
+    <main>
+      <h1>{{ lesson.title }}</h1>
+      <div
+        class="video-container"
+        style="width: 100%; max-width: 800px; margin: 0 auto"
+      >
+        {% if lesson.video_url %}
+        <video
+          src="{{ lesson.video_url.url }}"
+          class="object-fit-contain w-100 h-auto"
+          autoplay
+          controls
+          style="background-color: #000"
+        ></video>
+        {% endif %}
+      </div>
 
-{% elif lesson.lesson_type == "video" %}
-<div>
-  <iframe
-    width="800"
-    height="450"
-    src="{{ lesson.video_url }}"
-    frameborder="0"
-    allowfullscreen
-  >
-  </iframe>
-</div>
+      <!-- Lesson Type Rendering -->
+      {% if lesson.lesson_type == 'text' %}
+      <h4>Text Lesson</h4>
+      <p>{{ lesson.content }}</p>
 
-{% elif lesson.document_file %}
-<div>
-  <a href="{{ lesson.document_file.url }}" target="_blank">
-    📄 Download/View Document
-  </a>
-</div>
+      {% elif lesson.lesson_type == 'html' %}
+      <h4>HTML Lesson</h4>
+      {{ lesson.content|safe }} {% elif lesson.lesson_type == 'pdf' %}
+      <h4>Document</h4>
+      {% if lesson.document_file %}
+      <p>
+        <a href="{{ lesson.document_file.url }}" target="_blank">
+          View / Download Document
+        </a>
+      </p>
+      {% else %}
+      <p>No document uploaded.</p>
+      {% endif %} {% elif lesson.lesson_type == 'link' %}
+      <h4>External Resource</h4>
+      {% if lesson.external_link %}
+      <a href="{{ lesson.external_link }}" target="_blank">
+        Open External Link
+      </a>
+      {% else %}
+      <p>Link not available.</p>
+      {% endif %} {% endif %}
+    </main>
 
-{% elif lesson.lesson_type == "external" %}
-<div>
-  <a href="{{ lesson.external_url }}" target="_blank">
-    🌐 Open External Resource
-  </a>
-</div>
-{% endif %}
+    <hr />
 
-<hr />
+    <section>
+      {% if lesson.transcripts %}
+      <h3>Transcript</h3>
+      <p>{{ lesson.transcripts }}</p>
+      {% endif %} {% if lesson.attachments %}
+      <h3>Attachments</h3>
+      <a href="{{ lesson.attachments.url }}" download> Download Attachment </a>
+      {% endif %}
 
-<!-- Navigation -->
-<div style="margin-top: 20px">
-  {% if previous_lesson %}
-  <a href="{% url 'lesson_detail' previous_lesson.id %}">← Previous Lesson</a>
-  {% endif %} {% if next_lesson %}
-  <a href="{% url 'lesson_detail' next_lesson.id %}" style="float: right"
-    >Next Lesson →</a
-  >
-  {% endif %}
-</div>
+      <p>Duration: {{ lesson.duration_minutes }} minutes</p>
+    </section>
 
-<hr />
+    <hr />
 
-<!-- Progress Info -->
-<p>Last accessed: {{ progress.last_accessed }}</p>
+    <nav>
+      {% if previous_lesson %}
+      <a href="{% url 'lesson_detail' previous_lesson.id %}">
+        ← Previous Lesson: {{ previous_lesson.title }}
+      </a>
+      {% endif %}
+
+      <br /><br />
+
+      {% if next_lesson %}
+      <a href="{% url 'lesson_detail' next_lesson.id %}">
+        Next Lesson: {{ next_lesson.title }} →
+      </a>
+      {% endif %}
+    </nav>
+
+    <hr />
+
+    <footer>
+      <p>Last accessed: {{ progress.last_accessed }}</p>
+
+      {% if enrollment %}
+      <p>You are enrolled in this course.</p>
+      {% else %}
+      <p>You are not enrolled.</p>
+      {% endif %}
+    </footer>
+  </body>
+</html>

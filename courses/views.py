@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt, Choice, QuestionResponse
 from django.utils import timezone
@@ -45,15 +45,9 @@ def course_detail(request, course_id):
 
     # # Check if user is authenticated
     if not request.user.is_authenticated:
-        # Redirect to login or show limited view
-        return redirect('login')  # Or render a public preview page
+        return redirect('login')
 
-    # enrollment = Enrollment.objects.filter(
-    #     user=request.user, course=course, is_active=True).first()
     enrollment = None
-
-    # if not enrollment or not enrollment.is_valid():
-    #     return redirect('course_list')
 
     modules = course.modules.filter(
         is_published=True).prefetch_related('lessons').order_by('order')
@@ -79,7 +73,7 @@ def module_detail(request, module_id):
     module = Module.objects.get(id=module_id, is_published=True)
     lessons = module.lessons.filter(is_published=True)
     course = module.course
-
+    modules = course.modules.filter(is_published=True)
     # Check if user is authenticated
     if not request.user.is_authenticated:
         return redirect('login')  # Or show limited view
@@ -90,6 +84,7 @@ def module_detail(request, module_id):
 
     context = {
         'module': module,
+        'modules': modules,
         'course': course,
         'lessons': lessons,
         'enrollment': enrollment
@@ -98,31 +93,28 @@ def module_detail(request, module_id):
     return render(request, 'course/module_detail.html', context)
 
 
+@login_required
 def lesson_detail(request, lesson_id):
-    lesson = Lesson.objects.get(id=lesson_id, is_published=True)
+    lesson = get_object_or_404(Lesson, id=lesson_id, is_published=True)
     course = lesson.module.course
+    module = lesson.module
 
-    # Check if user is authenticated
-    if not request.user.is_authenticated:
-        return redirect('login')
+    # enrollment check
+    enrollment = Enrollment.objects.filter(
+        user=request.user,
+        course=course,
+        is_active=True
+    ).first()
 
-    try:
-        enrollment = Enrollment.objects.get(
-            user=request.user, course=lesson.module.course, is_active=True)
-    except Enrollment.DoesNotExist:
-        return redirect('course_list')
-
-    if not enrollment.is_valid():
-        return redirect('course_list')
-
-    # update the lesson progress of user
+    # lesson progress
     progress, created = LessonProgress.objects.get_or_create(
-        user=request.user, lesson=lesson)
+        user=request.user,
+        lesson=lesson
+    )
     progress.last_accessed = timezone.now()
-    # save the progress
     progress.save()
 
-    # get next and previous lessons
+    # next & previous lessons (same module)
     next_lesson = Lesson.objects.filter(
         module=lesson.module,
         order__gt=lesson.order,
@@ -138,10 +130,11 @@ def lesson_detail(request, lesson_id):
     context = {
         'lesson': lesson,
         'course': course,
+        "module": module,
         'progress': progress,
         'next_lesson': next_lesson,
         'previous_lesson': previous_lesson,
-        'enrollment': enrollment
+        'enrollment': enrollment,
     }
 
     return render(request, 'course/lesson_detail.html', context)

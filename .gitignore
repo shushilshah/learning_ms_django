@@ -2,3 +2,5 @@ db.sqlite3
 venv
 testing_code
 staticfiles
+media
+lessons_doc

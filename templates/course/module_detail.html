@@ -3,186 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Module Lessons</title>
+    <title>{{ course.title}}</title>
+    <!-- Bootstrap CSS -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <style>
-      /* Base */
       body {
-        margin: 0;
-        font-family: "Inter", sans-serif;
-        background: #f2f6fb;
-        color: #1f2937;
+        min-height: 100vh;
       }
-
-      /* Header */
-      .header {
-        text-align: center;
-        padding: 50px 20px 20px;
+      .side-panel {
+        background-color: #f8f9fa;
+        padding: 20px;
+        min-height: 100vh;
       }
-
-      .header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: #111827;
-      }
-
-      .header h3 {
-        font-weight: 400;
-        color: #4b5563;
-        font-size: 1.2rem;
-      }
-
-      /* Grid container */
-      .container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 30px;
-        padding: 30px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      /* Lesson Card */
-      .lesson-card {
-        position: relative;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 25px 20px 60px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
-        cursor: pointer;
-      }
-
-      .lesson-card::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(135deg, #3b82f6, #6366f1, #f43f5e, #10b981);
-        opacity: 0.1;
-        transform: rotate(25deg);
-        pointer-events: none;
-      }
-
-      .lesson-card:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-      }
-
-      /* Lesson title */
-      .lesson-card a {
-        text-decoration: none;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #111827;
-        display: block;
-        margin-bottom: 15px;
-        z-index: 1;
-        position: relative;
-      }
-
-      /* Badge / labels */
-      .badge {
-        background: #f43f5e;
-        color: white;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        padding: 4px 10px;
-        border-radius: 12px;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        z-index: 2;
-      }
-
-      /* Lesson info footer */
-      .lesson-footer {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 1;
-      }
-
-      /* Progress bar */
-      .progress-bar {
-        flex-grow: 1;
-        height: 8px;
-        background: #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-left: 10px;
-      }
-
-      .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #6366f1);
-        width: 0%;
-        border-radius: 10px;
-        transition: width 0.8s ease;
-      }
-
-      /* Lesson meta */
-      .meta {
-        font-size: 0.85rem;
-        color: #6b7280;
-        font-weight: 500;
-      }
-
-      @media (max-width: 600px) {
-        .header h1 {
-          font-size: 2rem;
-        }
-        .header h3 {
-          font-size: 1rem;
-        }
+      .main-content {
+        padding: 20px;
       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <h1>{{ module.title }}</h1>
-      <h3>Available Lessons</h3>
-    </div>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Side Panel -->
+        <div class="col-md-3 col-lg-2 side-panel" style="width: 350px">
+          <h2>{{course.title}}</h2>
+          <h5>Modules</h5>
+          <ul class="nav flex-column">
+            {% for module in modules %}
+            <div class="dropdown mb-2">
+              <button
+                class="btn btn-secondary dropdown-toggle w-100 text-start"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                {{ module.title }}
+              </button>
 
-    <div class="container">
-      {% for lesson in lessons %}
-      <div class="lesson-card">
-        {% if lesson.is_new %}
-        <span class="badge">New</span>
-        {% endif %}
-        <a href="{% url 'lesson_detail' lesson.id %}">{{ lesson.title }}</a>
-        <div class="lesson-footer">
-          <span class="meta">{{ lesson.duration|default:"10 min" }}</span>
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              style="width: {{ lesson.progress|default:0 }}%;"
-            ></div>
-          </div>
+              <ul class="dropdown-menu w-100">
+                {% for lesson in module.lessons.all %}
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{% url 'lesson_detail' lesson.id %}"
+                    >{{lesson.title}}</a
+                  >
+                </li>
+                {% empty %}
+
+                <li>
+                  <span class="dropdown-item text-muted">No lessons</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-3 main-content">
+          {% comment %} {% for lesson in lesson %} {% endcomment %}
+          <h2>{{module.title}}</h2>
+          {% comment %} {% endfor %} {% endcomment %}
         </div>
       </div>
-      {% endfor %}
     </div>
 
-    <script>
-      // Animate progress bars
-      document.querySelectorAll(".progress-fill").forEach((bar) => {
-        const width = bar.style.width;
-        bar.style.width = "0%";
-        setTimeout(() => (bar.style.width = width), 100);
-      });
-    </script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
