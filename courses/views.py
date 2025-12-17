@@ -4,11 +4,94 @@ from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Q
 from django.utils import timezone
 from django.http import JsonResponse
 from django.contrib.auth import logout
+from .decorators import role_required
 
 
 def logout_user(request):
     logout(request)
     return redirect('login')
+
+
+@login_required
+@role_required(['admin'])
+def admin_dashboard(request):
+    return render(request, 'admin/dashboard.html')
+
+
+@login_required
+@role_required(['teacher'])
+def teacher_dashboard(request):
+    return render(request, 'teacher/dashboard.html')
+
+
+@login_required
+@role_required(['student'])
+def student_dashboard(request):
+    return render(request, 'student/dashboard.html')
+
+
+@login_required
+def role_redirect(request):
+    role = request.user.userprofile.role
+
+    if role == 'admin':
+        return redirect('admin_dashboard')
+    elif role == 'teacher':
+        return redirect('teacher_dashboard')
+    else:
+        return redirect('student_dashboard')
+
+
+@login_required
+@role_required(['student'])
+def student_dashboard(request):
+    user = request.user
+
+    enrollments = Enrollment.objects.filter(
+        user=user, is_active=True
+    ).select_related('course')
+
+    courses_progress = []
+
+    for enrollment in enrollments:
+        course = enrollment.course
+
+        total_lessons = Lesson.objects.filter(
+            module__course=course, is_published=True
+        ).count()
+
+        completed_lessons = LessonProgress.objects.filter(
+            user=user,
+            lesson__module__course=course,
+            is_completed=True
+        ).count()
+
+        progress_percentage = (
+            (completed_lessons / total_lessons) * 100
+            if total_lessons > 0 else 0
+        )
+
+        courses_progress.append({
+            'course': course,
+            'progress_percentage': int(progress_percentage),
+            'total_lessons': total_lessons,
+            'completed_lessons': completed_lessons,
+        })
+
+    recent_progress = LessonProgress.objects.filter(
+        user=user
+    ).select_related(
+        'lesson',
+        'lesson__module',
+        'lesson__module__course'
+    ).order_by('-last_accessed')[:5]
+
+    context = {
+        'courses_progress': courses_progress,
+        'recent_progress': recent_progress,
+    }
+
+    return render(request, 'student/dashboard.html', context)
 
 
 def course_list(request):

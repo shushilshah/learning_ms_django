@@ -1,9 +1,21 @@
-from django.db import models
-
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+
+
+class UserProfile(models.Model):
+    ROLE_CHOICES = (
+        ("admin", 'Admin'),
+        ("teacher", 'Teacher'),
+        ('student', 'Student')
+    )
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=255, choices=ROLE_CHOICES)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"
 
 
 class Course(models.Model):
@@ -101,7 +113,7 @@ class LessonProgress(models.Model):
     last_accessed = models.DateTimeField(auto_now=True)
 
     # resume to continue functions
-    resume_time = models.FloatField(default=0)  # for video contnnt
+    resume_time = models.PositiveIntegerField(default=0)  # for video contnnt
     last_read_position = models.PositiveIntegerField(
         default=0)  # for text content
 

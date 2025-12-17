@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Student Dashboard</title>
+  </head>
+  <body>
+    <h1>Student Dashboard</h1>
+
+    <h2>Your Courses</h2>
+
+    {% if courses_progress %}
+    <ul>
+      {% for item in courses_progress %}
+      <li>
+        <strong>{{ item.course.title }}</strong><br />
+        Progress: {{ item.progress_percentage }}% <br />
+        Lessons: {{ item.completed_lessons }} / {{ item.total_lessons }}
+        <br />
+        <a href="{% url 'course_detail' item.course.id %}">Go to course</a>
+      </li>
+      <hr />
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>You are not enrolled in any courses.</p>
+    {% endif %}
+
+    <hr />
+
+    <h2>Recent Activity</h2>
+
+    {% if recent_progress %}
+    <ul>
+      {% for progress in recent_progress %}
+      <li>
+        {{ progress.lesson.title }} ({{ progress.lesson.module.course.title }})
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No recent activity</p>
+    {% endif %}
+
+    <hr />
+
+    <a href="{% url 'learning_dashboard' %}">Back to LMS</a>
+  </body>
+</html>
