@@ -18,9 +18,16 @@ class ChoiceInline(admin.TabularInline):
     extra = 4
 
 
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", 'role')
+    list_filter = ('role',)
+    search_fields = ("user__username",)
+
+
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ['title', 'instructor',
+    list_display = ['title', 'teacher',
                     'price', 'is_published', 'created_at']
     list_filter = ['is_published', 'created_at']
     search_fields = ['title', 'description']

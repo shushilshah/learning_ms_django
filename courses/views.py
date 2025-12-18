@@ -2,9 +2,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt, Choice, QuestionResponse
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth import logout
 from .decorators import role_required
+from lms_system.forms import CourseForm, ModuleForm
 
 
 def logout_user(request):
@@ -92,6 +93,85 @@ def student_dashboard(request):
     }
 
     return render(request, 'student/dashboard.html', context)
+
+
+@login_required
+@role_required(['teacher'])
+def teacher_dashboard(request):
+    teacher = request.user
+
+    courses = Course.objects.filter(teacher=teacher)
+    course_data = []
+    for course in courses:
+        total_students = Enrollment.objects.filter(
+            course=course, is_active=True).count
+
+        course_data.append({
+            'course': course,
+            'total_students': total_students,
+        })
+
+    context = {
+        'course_data': course_data
+    }
+
+    return render(request, 'teacher/dashboard.html', context)
+
+
+@login_required
+@role_required(['teacher'])
+def create_course(request):
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.teacher = request.user
+            course.save()
+            return redirect('teacher_dashboard')
+    else:
+        form = CourseForm()
+
+    return render(request, 'teacher/create_course.html', {'form': form})
+
+
+@login_required
+@role_required(['teacher'])
+def create_module(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    if course.teacher != request.user:
+        return HttpResponseForbidden("Not Allowed")
+
+    if request.method == "POST":
+        form = ModuleForm(request.POST)
+
+        if form.is_valid():
+            module = form.save(commit=False)
+            module.course = course
+            module.save()
+            return redirect('teacher_course_detail', course_id=course.id)
+    else:
+        form = ModuleForm()
+
+    context = {
+        'form': form,
+        'course': course
+    }
+
+    return render(request, 'teacher/create_module.html', context)
+
+
+@login_required
+@role_required(['teacher'])
+def teacher_course_detail(request, course_id):
+    course = get_object_or_404(Course, id=course_id, teacher=request.user)
+    modules = course.modules.all()
+
+    context = {
+        'course': course,
+        'modules': modules
+    }
+    return render(request, 'teacher/course_detail.html', context)
 
 
 def course_list(request):

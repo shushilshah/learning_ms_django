@@ -21,7 +21,7 @@ class UserProfile(models.Model):
 class Course(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    instructor = models.ForeignKey(
+    teacher = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='courses_taught')
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_published = models.BooleanField(default=False)

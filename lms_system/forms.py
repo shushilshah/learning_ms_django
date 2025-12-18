@@ -5,10 +5,10 @@ from courses.models import Course, Module, Lesson, Quiz, Question, Choice
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['title', 'description', 'instructor',
-                  'price', 'is_published', 'prerequisites']
+        fields = ['title', 'description',
+                  'price', 'is_published', 'prerequistes']
         widgets = {
-            'prerequisites': forms.CheckboxSelectMultiple,
+            'prerequistes': forms.CheckboxSelectMultiple,
         }
 
 
@@ -22,7 +22,7 @@ class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
         fields = ['module', 'title', 'lesson_type', 'content', 'video_url',
-                  'document_file', 'external_url', 'order', 'is_published', 'duration_minutes']
+                  'external_link', 'order', 'is_published', 'duration_minutes']
 
     def clean(self):
         cleaned_data = super().clean()

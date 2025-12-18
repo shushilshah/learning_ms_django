@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Detail - Teacher</title>
+  </head>
+  <body>
+    <h2>{{course.title}}</h2>
+    <a href="{% url 'create_module' course.id %}"> Add Module</a>
+
+    <hr />
+
+    <ul>
+      {% for module in modules %}
+      <li>
+        {{module.order}}. {{module.title}} {% if module.is_published %}
+        (Published) {% else %} (Draft) {% endif %}
+      </li>
+      {% empty %}
+      <li>No modules yet</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

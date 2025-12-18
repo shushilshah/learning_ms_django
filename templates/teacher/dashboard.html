@@ -1,12 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Teacher Dashboard</title>
   </head>
   <body>
+    <a href="{% url 'create_course' %}">Create New Course</a>
+    <hr />
     <h1>Teacher Dashboard</h1>
+
+    <h2>Your Courses</h2>
+
+    {% if course_data %}
+    <ul>
+      {% for item in course_data %}
+      <li>
+        <strong>{{ item.course.title }}</strong><br />
+        Students Enrolled: {{ item.total_students }}<br />
+
+        <a href="{% url 'course_detail' item.course.id %}">View Course</a>
+        <!-- later -->
+        <!-- <a href="#">Edit Course</a> -->
+      </li>
+      <hr />
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>You haven’t created any courses yet.</p>
+    {% endif %}
+
+    <hr />
+
     <a href="{% url 'learning_dashboard' %}">Back to LMS</a>
   </body>
 </html>
