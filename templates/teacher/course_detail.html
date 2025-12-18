@@ -11,6 +11,24 @@
 
     <hr />
 
+    {% for module in modules %}
+    <h4>
+      {{module.order}}. {{module.title}}
+      <a href="{% url 'create_lesson' module.id}">Add Lesson</a>
+    </h4>
+
+    <ul>
+      {% for lesson in module.lessons.all %}
+      <li>
+        {{ lesson.order }}. {{ lesson.title }} {% if lesson.is_published%}
+        (Published) {% else %} (Draft) {% endif %}
+      </li>
+      {% empty %}
+      <li>No lessons yet</li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+
     <ul>
       {% for module in modules %}
       <li>

@@ -63,7 +63,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=200)
     lesson_type = models.CharField(max_length=20, choices=LESSON_TYPES)
     content = models.TextField(blank=True)
-    video_url = models.FileField(blank=True)
+    # video_url = models.FileField(blank=True)
     external_link = models.URLField(blank=True)
     transcripts = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
