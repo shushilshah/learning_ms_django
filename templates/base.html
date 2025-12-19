@@ -209,7 +209,12 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-content">{% block content %} {% endblock %}</div>
+    <div class="main-content">
+      <h2 style="text-align: center">
+        Welcome! {{user.get_full_name|default:user.username}}
+      </h2>
+      {% block content %} {% endblock %}
+    </div>
 
     {% block extra_js %}{% endblock %}
   </body>
