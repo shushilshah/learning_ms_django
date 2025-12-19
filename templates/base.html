@@ -1,9 +1,26 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LMS</title>
+  </head>
+  <body>
+    {% if user.is_authenticated %} {% include 'partials/navbar.html' %}
+    {%endif%}
+    <hr />
+    {% block content %} {% endblock %}
+  </body>
+</html>
+{% endcomment %}
+
+<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Learning Dashboard</title>
+    <title>{% block title %}Learning Management System{% endblock %}</title>
 
     <!-- Google Font -->
     <link
@@ -11,6 +28,7 @@
       rel="stylesheet"
     />
 
+    <!-- Base Styles -->
     <style>
       * {
         margin: 0;
@@ -62,13 +80,6 @@
         margin-left: 240px;
         padding: 30px;
         flex: 1;
-      }
-
-      .header {
-        font-size: 26px;
-        font-weight: 600;
-        margin-bottom: 30px;
-        color: #1f2937;
       }
 
       .logout-btn {
@@ -177,64 +188,29 @@
         }
       }
     </style>
-  </head>
 
+    {% block extra_css %}{% endblock %}
+  </head>
   <body>
     <!-- Sidebar -->
     <div class="sidebar">
       <h2>LMS Panel</h2>
       <a href="{% url 'learning_dashboard' %}">📊 Dashboard</a>
       <a href="{% url 'course_list' %}">📚 All Courses</a>
-      {% comment %} <a href="{% url 'profile' %}">👤 Profile</a>{% endcomment %}
 
+      {% if user.is_authenticated %}
       <form method="post" action="{% url 'logout_user' %}">
         {% csrf_token %}
         <button type="submit" class="logout-btn">🚪 Logout</button>
       </form>
+      {% else %}
+      <a href="{% url 'login_user' %}">🔑 Login</a>
+      {% endif %}
     </div>
 
     <!-- Main Content -->
-    <div class="main-content">
-      <div class="header">🎓 Your Dashboard</div>
+    <div class="main-content">{% block content %} {% endblock %}</div>
 
-      {% if courses_progress %}
-      <div class="dashboard-container">
-        {% for item in courses_progress %}
-        <div class="course-card">
-          <h3>{{ item.course.title }}</h3>
-
-          {% if item.total_lessons > 0 %}
-          <div class="course-meta">
-            {{ item.completed_lessons }} of {{ item.total_lessons }} lessons
-            completed
-          </div>
-
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              style="width: {{ item.progress_percentage|floatformat:0 }}%;"
-            ></div>
-          </div>
-
-          <div class="progress-text">
-            Progress: {{ item.progress_percentage|floatformat:0 }}%
-          </div>
-          {% else %}
-          <div class="course-meta">No lessons available yet</div>
-          {% endif %}
-
-          <a href="{% url 'course_detail' item.course.id %}" class="open-btn">
-            Continue Learning →
-          </a>
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <p>No enrolled courses found.</p>
-      <button type="submit">
-        <a href="{% url 'course_list' %}">Enroll Now</a>
-      </button>
-      {% endif %}
-    </div>
+    {% block extra_js %}{% endblock %}
   </body>
 </html>

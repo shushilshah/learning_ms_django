@@ -3,14 +3,33 @@ from django.contrib.auth.decorators import login_required
 from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt, Choice, QuestionResponse
 from django.utils import timezone
 from django.http import HttpResponseForbidden, JsonResponse
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login, authenticate
 from .decorators import role_required
 from lms_system.forms import CourseForm, LessonForm, ModuleForm
+from django.contrib import messages
 
 
 def logout_user(request):
-    logout(request)
-    return redirect('login')
+    if request.method == 'POST':
+        logout(request)
+        return redirect('login_user')
+
+
+def login_user(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('role_redirect')
+        else:
+            return render(request, 'auth/login.html', {
+                'error': 'Invalid Credentials'
+            })
+    return render(request, 'auth/login.html')
 
 
 @login_required
@@ -36,7 +55,7 @@ def role_redirect(request):
     role = request.user.userprofile.role
 
     if role == 'admin':
-        return redirect('admin_dashboard')
+        return redirect('/admin/')
     elif role == 'teacher':
         return redirect('teacher_dashboard')
     else:
@@ -229,6 +248,25 @@ def course_list(request):
         }
 
     return render(request, 'course/course_list.html', context)
+
+
+@login_required
+def enroll_course(request, course_id):
+    if request.method == 'POST':
+        course = get_object_or_404(Course, id=course_id)
+
+        # check if already enrolled
+        if Enrollment.objects.filter(student=request.user, course=course).exists():
+            messages.warning(
+                request, f"You are already enrolled in {course.title}")
+
+        else:
+            Enrollment.objects.create(student=request.user, course=course)
+            messages.success(
+                request, f"You successfully enrolled in this {course.title} course.")
+
+        return redirect("course_detail")
+    return redirect('course_list')
 
 
 def course_detail(request, course_id):

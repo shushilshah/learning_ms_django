@@ -1,0 +1,18 @@
+<nav>
+  <button><a href="{% url 'learning_dashboard' %}">Dashboard</a></button>
+
+  {% if user.userprofile.role == 'teacher' %}
+  <button><a href="{% url 'teacher_dashboard' %}">Teacher Panel</a></button>
+
+  <button><a href="{% url 'create_course' %}">Create Course</a></button>
+  {% endif %} {% if user.userprofile.role == 'student' %}
+  <button><a href="{% url 'learning_dashboard' %}">My Course</a></button><br />
+  {% endif %} {% if user.userprofile.role == 'admin' %}
+  <a href="/admin/">Admin Panel</a>
+  {% endif %}
+
+  <form method="POST" action="{% url 'logout_user' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+  </form>
+</nav>

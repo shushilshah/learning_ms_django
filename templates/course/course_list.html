@@ -6,6 +6,15 @@
     <h2>
       <a href="{% url 'course_detail' course.id %}"> {{ course.title }} </a>
     </h2>
+
+    {% if user.is_authenticated%} {% if course.id in enrolled_courses %}
+    <p>Already Enrolled</p>
+    {% else %}
+    <form action="{% url 'enroll_course' course.id %}" method="POST">
+      {% csrf_token %}
+      <button type="submit">Enroll Now</button>
+    </form>
+    {% endif %} {% endif %}
   </li>
   <br />
   {% empty %}
