@@ -137,7 +137,7 @@ def teacher_dashboard(request):
     course_data = []
     for course in courses:
         total_students = Enrollment.objects.filter(
-            course=course, is_active=True).count
+            course=course, is_active=True).count()
 
         course_data.append({
             'course': course,
@@ -528,9 +528,9 @@ def enroll_course(request, course_id):
 
 
 @login_required
+@role_required(['student'])
 def learning_dashboard(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
+    user = request.user
 
     user_enrollments = Enrollment.objects.filter(
         user=request.user, is_active=True).select_related('course')

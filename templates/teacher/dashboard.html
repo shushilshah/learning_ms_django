@@ -1,7 +1,20 @@
-{% extends "base.html" %} {% block content %}
+{% extends 'base.html'%} {% block content %}
 
 <h2>Teacher Dashboard</h2>
 
-<a href="{% url 'create_course' %}">➕ Create Course</a>
+<button><a href="{% url 'create_course' %}">➕ Course</a></button>
 
-{% endblock %}
+<hr />
+<br />
+<br />
+{% for course in course_data %}
+<h4>{{course.course.title}}</h4>
+<p>Students Enrolled: {{course.total_students}}</p>
+
+<button>
+  <a href="{% url 'create_module' course.course.id %}">➕ Create Module</a>
+</button>
+<button>
+  <a href="{% url 'create_lesson' course.course.id %}">➕ Create Lesson</a>
+</button>
+{% endfor %} {% endblock %}
