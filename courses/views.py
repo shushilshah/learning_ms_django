@@ -1,12 +1,26 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt, Choice, QuestionResponse
+from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt, Choice, QuestionResponse, UserProfile
 from django.utils import timezone
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth import logout, login, authenticate
 from .decorators import role_required
-from lms_system.forms import CourseForm, LessonForm, ModuleForm
+from lms_system.forms import CourseForm, LessonForm, ModuleForm, SignupForm
 from django.contrib import messages
+
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            UserProfile.objects.create(user=user, role="student")
+            login(request, user)
+            return redirect("learning_dashboard")
+    else:
+        form = SignupForm()
+
+    return render(request, "auth/signup.html", {"form": form})
 
 
 def logout_user(request):

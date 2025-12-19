@@ -1,5 +1,7 @@
 from django import forms
 from courses.models import Course, Module, Lesson, Quiz, Question, Choice
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 
 class CourseForm(forms.ModelForm):
@@ -48,3 +50,9 @@ class ChoiceForm(forms.ModelForm):
     class Meta:
         model = Choice
         fields = ['question', 'choice_text', 'is_correct', 'order']
+
+
+class SignupForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ("username", "password1", "password2")
