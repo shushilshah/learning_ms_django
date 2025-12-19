@@ -14,7 +14,7 @@ def signup_view(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
-            UserProfile.objects.create(user=user, role="student")
+            # UserProfile.objects.create(user=user, role="student")
             login(request, user)
             return redirect("learning_dashboard")
     else:
