@@ -2,11 +2,13 @@
 
 <h2>Teacher Dashboard</h2>
 
-<button><a href="{% url 'create_course' %}">➕ Course</a></button>
+<button><a href="{% url 'create_course' %}">➕ Create Course</a></button>
 
 <hr />
 <br />
 <br />
+
+<h2>My Courses</h2>
 {% for course in course_data %}
 <h4>{{course.course.title}}</h4>
 <p>Students Enrolled: {{course.total_students}}</p>
@@ -17,4 +19,6 @@
 <button>
   <a href="{% url 'create_lesson' course.course.id %}">➕ Create Lesson</a>
 </button>
+{% empty %}
+<p>You haven't created any courses</p>
 {% endfor %} {% endblock %}
