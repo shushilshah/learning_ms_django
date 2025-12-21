@@ -65,6 +65,11 @@ def student_dashboard(request):
 
 
 @login_required
+def profile_view(request):
+    return render(request, 'profile.html')
+
+
+@login_required
 def role_redirect(request):
     role = request.user.userprofile.role
 
