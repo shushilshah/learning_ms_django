@@ -56,3 +56,10 @@ class SignupForm(UserCreationForm):
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
+
+
+class EditCourseForm(forms.ModelForm):
+    class Meta:
+        model = Course
+        fields = ['title', 'description',
+                  'price', 'is_published', 'prerequistes']

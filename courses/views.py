@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth import logout, login, authenticate
 from .decorators import role_required
-from lms_system.forms import CourseForm, LessonForm, ModuleForm, SignupForm
+from lms_system.forms import *
 from django.contrib import messages
 
 
@@ -170,6 +170,30 @@ def create_course(request):
         form = CourseForm()
 
     return render(request, 'teacher/create_course.html', {'form': form})
+
+
+@login_required
+@role_required(['teacher'])
+def edit_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if course.teacher != request.user:
+        return HttpResponseForbidden("Not Allowed")
+
+    if request.method == 'POST':
+        form = EditCourseForm(request.POST, request.FILES, instance=course)
+        if form.is_valid():
+            form.save()
+            return redirect("teacher_dashboard")
+
+    else:
+        form = EditCourseForm(instance=course)
+
+    context = {
+        'form': form,
+        'course': course
+    }
+
+    return render(request, 'course/edit_course.html', context)
 
 
 @login_required
