@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+from django.contrib.auth import views as auth_views
 urlpatterns = [
     path("", views.login_user, name="login_user"),
     path("signup/", views.signup_view, name='signup'),
@@ -41,4 +41,6 @@ urlpatterns = [
          views.submit_quiz, name='submit_quiz'),
     path('quiz/attempt/<int:attempt_id>/result/',
          views.quiz_result, name='quiz_result'),
+     path("password-change/", auth_views.PasswordChangeView.as_view(template_name="accounts/password_change.html", success_url="/password-change-done/"), name="password_change"),
+     path("password-change-done/", auth_views.PasswordChangeDoneView.as_view(template_name="accounts/password_change_done.html"), name="password_change_done"),
 ]
