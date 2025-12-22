@@ -7,6 +7,7 @@ from django.contrib.auth import logout, login, authenticate
 from .decorators import role_required
 from lms_system.forms import *
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 
 
 def signup_view(request):
@@ -138,7 +139,10 @@ def student_dashboard(request):
 def teacher_dashboard(request):
     teacher = request.user
 
-    courses = Course.objects.filter(teacher=teacher)
+    courses = Course.objects.filter(teacher=teacher, is_published=True)
+    approved_courses = Course.objects.filter(teacher=teacher, is_published=True)
+    pending_courses = Course.objects.filter(teacher=teacher, is_published=False)
+
     course_data = []
     for course in courses:
         total_students = Enrollment.objects.filter(
@@ -150,7 +154,9 @@ def teacher_dashboard(request):
         })
 
     context = {
-        'course_data': course_data
+        'course_data': course_data,
+        'approved_courses': approved_courses,
+        'pending_courses' : pending_courses,
     }
 
     return render(request, 'teacher/dashboard.html', context)
@@ -160,11 +166,13 @@ def teacher_dashboard(request):
 @role_required(['teacher'])
 def create_course(request):
     if request.method == 'POST':
-        form = CourseForm(request.POST)
+        form = CourseForm(request.POST, request.FILES)
         if form.is_valid():
             course = form.save(commit=False)
             course.teacher = request.user
+            course.is_published = False
             course.save()
+            messages.success(request, "Course submitted for admin aproval.")
             return redirect('teacher_dashboard')
     else:
         form = CourseForm()
@@ -200,6 +208,9 @@ def edit_course(request, course_id):
 @role_required(['teacher'])
 def create_module(request, course_id):
     course = get_object_or_404(Course, id=course_id)
+
+    if not course.is_published:
+        raise PermissionDenied("Course not approved yet")
 
     if course.teacher != request.user:
         return HttpResponseForbidden("Not Allowed")
@@ -241,6 +252,9 @@ def teacher_course_detail(request, course_id):
 def create_lesson(request, module_id):
     module = get_object_or_404(Module, id=module_id)
     course = module.course
+
+    if not course.is_published:
+        raise PermissionDenied("Course not approved yet")
 
     if course.teacher != request.user:
         return HttpResponseForbidden("Not Allowed")
@@ -340,7 +354,7 @@ def course_detail(request, course_id):
     }
     return render(request, 'course/course_detail.html', context)
 
-
+@login_required
 def module_detail(request, module_id):
     module = Module.objects.get(id=module_id, is_published=True)
     lessons = module.lessons.filter(is_published=True)
@@ -619,3 +633,26 @@ def learning_dashboard(request):
         'recent_progress': recent_activities,
     }
     return render(request, 'dashboard.html', context)
+
+
+
+# admin see pending courses
+@login_required
+@role_required(['admin'])
+def pending_courses(request):
+    courses = Course.objects.filter(is_published=False)
+    context = {
+        'courses': courses
+    }
+    return redirect(request, 'course/pending_courses.html', context)
+
+
+@login_required
+@role_required(['admin'])
+def approve_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    course.is_published = True
+    course.updated_at = timezone.now()
+    course.save()
+    messages.success(request, "Course '{course.title}' approved.")
+    return redirect('pending_course')

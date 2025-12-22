@@ -8,10 +8,12 @@
   <body>
     <h1>Create New Course</h1>
 
-    <form method="POST">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Create Course</button>
-    </form>
+    <form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Submit for Approval</button>
+</form>
+
 
     <br />
     <a href="{% url 'teacher_dashboard' %}">Back to Dashboard</a>

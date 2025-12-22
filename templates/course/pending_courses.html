@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Pending Courses</h2>
+<ul>
+  {% for course in courses %}
+    <li>
+      {{ course.title }} by {{ course.teacher.username }}
+      <a href="{% url 'approve_course' course.id %}">Approve</a>
+    </li>
+  {% empty %}
+    <li>No pending courses</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

@@ -8,22 +8,33 @@
 <br />
 <br />
 
-<h1>My Courses</h1>
+<h1 style="text-align: center;">My Courses</h1>
+<h2>Approved Course</h2>
 <br />
-{% for course in course_data %}
-<h2>{{course.course.title}}</h2>
+{% for course in approved_courses %}
+<h2>{{course.title}}</h2>
 
 <p>Students Enrolled: {{course.total_students}}</p>
 
 <button>
-  <a href="{% url 'create_module' course.course.id %}">➕ Create Module</a>
+  <a href="{% url 'create_module' course.id %}">➕ Create Module</a>
 </button>
 <button>
-  <a href="{% url 'create_lesson' course.course.id %}">➕ Create Lesson</a>
+  <a href="{% url 'create_lesson' course.id %}">➕ Create Lesson</a>
 </button>
 <button>
-  <a href="{% url 'edit_course' course.course.id %}">Edit Course</a>
+  <a href="{% url 'edit_course' course.id %}">Edit Course</a>
 </button>
 {% empty %}
-<p>You haven't created any courses</p>
-{% endfor %} {% endblock %}
+<p>No approved courses yet.</p>
+{% endfor %} 
+
+<hr>
+<h2>Pending Approval</h2>
+{% for courses in pending_courses %}
+<h4>{{courses.title}}</h4>
+<span>Waiting for admin approval</span>
+{% empty %}
+<p>No Pending requests.</p>
+{% endfor %}
+{% endblock %}
