@@ -379,12 +379,14 @@ def lesson_detail(request, lesson_id):
     ).first()
 
     # lesson progress
-    progress, created = LessonProgress.objects.get_or_create(
+    if request.user.is_authenticated and request.user.userprofile.role == "student":
+        progress, created = LessonProgress.objects.get_or_create(
         user=request.user,
         lesson=lesson
-    )
-    progress.last_accessed = timezone.now()
-    progress.save()
+        )
+        
+        progress.started_at = timezone.now()
+        progress.save()
 
     # next & previous lessons (same module)
     next_lesson = Lesson.objects.filter(
@@ -410,6 +412,30 @@ def lesson_detail(request, lesson_id):
     }
 
     return render(request, 'course/lesson_detail.html', context)
+
+
+@login_required
+@role_required(['student'])
+def resume_course(request, course_id):
+    lessons = Lesson.objects.filter(module__course_id = course_id).order_by("module__order", "order")
+
+    progress_qs = LessonProgress.objects.filter(user=request.user, lesson__in = lessons)
+
+    incomplete = progress_qs.filter(is_completed=False).order_by("started_at").first()
+
+    if incomplete:
+        return redirect("lesson_detail", incomplete.lesson.id)
+    
+    last_accessed = progress_qs.order_by("-started_at").first()
+    if last_accessed:
+        return redirect("lesson_detail", last_accessed.lesson.id)
+
+    first_lesson = lessons.first()
+    if first_lesson:
+        return redirect("lesson_detail", first_lesson.id)
+
+    return redirect("course_detail", course_id)
+
 
 
 @login_required

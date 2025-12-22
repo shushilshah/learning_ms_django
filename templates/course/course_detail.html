@@ -233,7 +233,11 @@
           <a href="{% url 'module_detail' module.id %}" class="module-btn">
             Start Module →
           </a>
+          {% if user.is_authenticated and user.userprofile.role == "student" %}
+        <a href="{% url 'resume_course' course.id %}" class="btn btn-primary">Resume Course</a>
+        {% endif %}
         </div>
+        
         {% endfor %}
       </div>
       {% else %}
