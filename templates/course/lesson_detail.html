@@ -90,6 +90,24 @@
 
     <hr />
 
+    {% if user.is_authenticated and user.userprofile.role == "student" %} 
+    {% if enrollment %} 
+    {% if lesson_progress and lesson_progress.is_completed %}
+    <div class="alert alert-success">You have completed this lesson</div>
+
+    {% else %}
+    <form method="POST" action="{% url 'lesson_complete' lesson.id %}">
+      {% csrf_token %}
+      <button class="btn btn-success">Mark as complete</button>
+    </form>
+    {% endif %} 
+    {% else %}
+    <div class="alert alert-warning">
+      You must enroll in this course to track progress.
+    </div>
+    {% endif %} 
+    {% endif %}
+
     <nav>
       {% if previous_lesson %}
       <a href="{% url 'lesson_detail' previous_lesson.id %}">

@@ -27,6 +27,8 @@ urlpatterns = [
     path('course/<int:course_id>/',
          views.course_detail, name='course_detail'),
     path('lessons/<int:lesson_id>/', views.lesson_detail, name='lesson_detail'),
+    path('lessons/<int:lesson_id>/complete/',
+         views.mark_lesson_complete, name="lesson_complete"),
     path('module/<int:module_id>/', views.module_detail, name='module_detail'),
     # path("accounts/login/",
     #      auth_views.LoginView.as_view(template_name='login.html'), name='login')

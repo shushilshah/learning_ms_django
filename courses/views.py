@@ -412,6 +412,8 @@ def lesson_detail(request, lesson_id):
     return render(request, 'course/lesson_detail.html', context)
 
 
+@login_required
+@role_required(['student'])
 def mark_lesson_complete(request, lesson_id):
     if request.method == 'POST':
         lesson = Lesson.objects.get(id=lesson_id)
