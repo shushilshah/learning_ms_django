@@ -33,9 +33,6 @@ urlpatterns = [
     path("course/<int:course_id>/resume/", views.resume_course, name="resume_course"),
     path("admin/pending-courses/", views.pending_courses, name="pending_courses"),
     path("admin/approve-course/<int:course_id>/", views.approve_course, name='approve_course'),
-    # path("accounts/login/",
-    #      auth_views.LoginView.as_view(template_name='login.html'), name='login')
-
     path('quiz/<int:quiz_id>/', views.take_quiz, name='take_quiz'),
     path('quiz/attempt/<int:attempt_id>/submit/',
          views.submit_quiz, name='submit_quiz'),

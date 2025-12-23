@@ -186,7 +186,7 @@
       <a href="{% url 'learning_dashboard' %}">📊 Dashboard</a>
       <a href="{% url 'course_list' %}">📚 All Courses</a>
       {% comment %} <a href="{% url 'profile' %}">👤 Profile</a>{% endcomment %}
-
+      <a href="{% url 'password_change' %}">Change Password</a>
       <form method="post" action="{% url 'logout_user' %}">
         {% csrf_token %}
         <button type="submit" class="logout-btn">🚪 Logout</button>
