@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from courses.models import UserProfile
+from courses.models import UserProfile, Course, Enrollment
 from django.contrib.auth import authenticate
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -41,3 +41,16 @@ class LoginSerializer(serializers.ModelSerializer):
         
         attrs['user'] = user
         return attrs
+    
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'description', 'teacher', 'price', 'is_published', 'created_at', 'updated_at']
+
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'user', 'course', 'enrolled_at', 'valid_until', 'enrollment_type', 'is_active']
+        read_only_fields = ['user', 'enrolled_at']

@@ -11,7 +11,7 @@ class UserProfile(models.Model):
         ('student', 'Student')
     )
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="userprofile")
     role = models.CharField(max_length=255, choices=ROLE_CHOICES)
 
     def __str__(self):

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from courses.models import Course, Enrollment, Lesson, LessonProgress, Module, Quiz, QuizAttempt, Choice, QuestionResponse, UserProfile
+from .models import *
 from django.utils import timezone
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth import logout, login, authenticate
@@ -579,11 +579,11 @@ def enroll_course(request, course_id):
     missing_prerequisities = prerequisities.exclude(
         id__in=user_completed_courses)
 
-    if missing_prerequisities.exists():
-        return render(request, 'course/prerequisites_missing.html', {
-            'course': course,
-            'missing_prerequisities': missing_prerequisities
-        })
+    # if missing_prerequisities.exists():
+    #     return render(request, 'course/prerequisites_missing.html', {
+    #         'course': course,
+    #         'missing_prerequisities': missing_prerequisities
+    #     })
 
     enrollment, created = Enrollment.objects.get_or_create(
         user=request.user,
