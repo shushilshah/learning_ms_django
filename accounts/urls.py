@@ -12,6 +12,7 @@ urlpatterns = [
     path("lessons/<int:lesson_id>/", LessonDetailAPIView.as_view(), name="api_lesson"),
     path("modules/<int:module_id>/", ModuleDetailAPIView.as_view(), name="api_module"),
     path('lessons/<int:lesson_id>/progress/', LessonProgressAPIView.as_view(), name='api_lesson_progress'),
+    path('dashboard/', LearningDashboardAPIView.as_view(), name='api_learning_dashboard')
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]

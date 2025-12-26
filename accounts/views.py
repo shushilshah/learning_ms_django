@@ -191,3 +191,39 @@ class LessonProgressAPIView(APIView):
             return Response(LessonProgressSerializer(updated_progress).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+class LearningDashboardAPIView(APIView):
+    permisson_classes = [IsAuthenticated]
+
+    def get(self, request):
+        enrollments = Enrollment.objects.filter(user=request.user, is_active=True).select_related("course")
+
+        course_progress_data = []
+
+        for enrollment in enrollments:
+            course = enrollment.course
+            total_lessons = Lesson.objects.filter(module__course=course, is_published=True).count()
+            completed_lessons = LessonProgress.objects.filter(
+                user=request.user, lesson__module__course=course, is_complete=True
+            ).count()
+
+            progress_percentage = (completed_lessons/total_lessons * 100) if total_lessons > 0 else 0
+
+            course_progress_data.append({
+                "course_title": course.title,
+                "progress_percentage": progress_percentage,
+                "total_lessons": total_lessons,
+                "completed_lessons": completed_lessons,
+            })
+
+            # recent activity
+
+        recent_activities = LessonProgress.objects.filter(user=request.user).select_related(
+                "lesson", "lesson__module", "lesson_module__course").order_by("-last_accessed")[:3]
+
+        recent_serializer = RecentActivitySerializer(recent_activities, many=True)
+
+        return Response({
+            "course_progress": course_progress_data,
+            "recent_activities": recent_serializer.data
+        })

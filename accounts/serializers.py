@@ -73,3 +73,21 @@ class LessonProgressSerializer(serializers.ModelSerializer):
         model = LessonProgress
         fields = ['id', 'lesson', 'is_completed', 'started_at', 'completed_at', 'time_spent_minutes', 'last_accessed']
         read_only_fields = ['started_at', 'completed_at', 'last_accessed']
+
+
+class CourseProgressSerilizer(serializers.Serializer):
+    course_title = serializers.CharField()
+    progress_percentage = serializers.FloatField()
+    total_lessons = serializers.IntegerField()
+    completed_lessons = serializers.IntegerField()
+
+
+class RecentActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonProgress
+        fields = ['lessons_title', 'module_title', 'course_title', 'is_completed', 'last_accessed']
+
+
+    lesson_title = serializers.CharField(source='lesson.title')
+    module_title = serializers.CharField(source='lesson.module.title')
+    course_title = serializers.CharField(source='lesson.module.course.title')
