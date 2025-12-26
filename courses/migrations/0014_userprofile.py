@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
+        migrations.SeparateDatabaseAndState(
             name="UserProfile",
             fields=[
                 (
