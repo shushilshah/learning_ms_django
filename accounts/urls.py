@@ -10,6 +10,8 @@ urlpatterns = [
     path('courses/', CourseListAPIView.as_view(), name="api_course_list"),
     path("courses/<int:course_id>/enroll/", EnrollCourseAPIView.as_view(), name="api_enroll_course"),
     path("lessons/<int:lesson_id>/", LessonDetailAPIView.as_view(), name="api_lesson"),
+    path("modules/<int:module_id>/", ModuleDetailAPIView.as_view(), name="api_module"),
+    path('lessons/<int:lesson_id>/progress/', LessonProgressAPIView.as_view(), name='api_lesson_progress'),
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]

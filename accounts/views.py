@@ -1,10 +1,10 @@
 from rest_framework import status, views, generics
 from rest_framework.response import Response
-from .serializers import SignupSerializer, CourseSerializer, LessonSerializer, ModuleSerializer
+from .serializers import *
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from courses.models import Course, Enrollment, Lesson, LessonProgress
+from courses.models import *
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from django.utils import timezone
@@ -150,3 +150,30 @@ class LessonDetailAPIView(generics.ListAPIView):
             'previous_lesson': LessonSerializer(previous_lesson).data if previous_lesson else None
         })
 
+
+class ModuleDetailAPIView(generics.ListAPIView):
+    serializer = ModuleSerializer
+
+    def get(self, request, module_id):
+        module = get_object_or_404(Module, id=module_id, is_published=True)
+        course = module.course
+
+        # check enrollment
+        enrollment = Enrollment.objects.filter(user=request.user, course=course, is_active=True).first()
+
+        return Response({
+            "module": module.title,
+            "course": course.title,
+            "enrollment": bool(enrollment),
+        }, status=status.HTTP_200_OK)
+    
+
+class LessonProgressAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, lesson_id):
+        lesson = get_object_or_404(Lesson, id=lesson_id, is_published=True)
+        progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+        serializer = LessonProgressSerializer(progress)
+        return Response(serializer.data)
+    

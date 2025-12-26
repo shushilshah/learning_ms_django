@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from courses.models import UserProfile, Course, Enrollment, Lesson, Module
+from courses.models import UserProfile, Course, Enrollment, Lesson, Module, LessonProgress
 from django.contrib.auth import authenticate
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -66,3 +66,10 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = ['id','title', 'lesson_type', 'content', 'external_link', 'is_published', 'duration_minutes', 'attachments', 'created_at']
         read_only_fields = ['title', 'created_at']
+
+
+class LessonProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonProgress
+        fields = ['id', 'lesson', 'is_completed', 'started_at', 'completed_at', 'time_spent_minutes', 'last_accessed']
+        read_only_fields = ['started_at', 'completed_at', 'last_accessed']
