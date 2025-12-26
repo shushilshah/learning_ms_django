@@ -9,6 +9,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('courses/', CourseListAPIView.as_view(), name="api_course_list"),
     path("courses/<int:course_id>/enroll/", EnrollCourseAPIView.as_view(), name="api_enroll_course"),
+    path("lessons/<int:lesson_id>/", LessonDetailAPIView.as_view(), name="api_lesson"),
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]

@@ -1,13 +1,13 @@
 from rest_framework import status, views, generics
 from rest_framework.response import Response
-from .serializers import SignupSerializer, CourseSerializer
+from .serializers import SignupSerializer, CourseSerializer, LessonSerializer, ModuleSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from courses.models import Course, Enrollment
+from courses.models import Course, Enrollment, Lesson, LessonProgress
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-
+from django.utils import timezone
 
 
 class SignupAPIView(views.APIView):
@@ -102,3 +102,51 @@ class EnrollCourseAPIView(APIView):
                 "course_id": course.id
             }, status=status.HTTP_201_CREATED
         )
+    
+
+class LessonDetailAPIView(generics.ListAPIView):
+    serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, lesson_id):
+        lesson = get_object_or_404(Lesson, id=lesson_id, is_published=True)
+        module = lesson.module
+        course = module.course
+
+        #check enrollment
+        enrollment = Enrollment.objects.filter(user=request.user, course=course, is_active=True).first()
+
+        progress_data = None
+        if request.user.userprofile.role == "student":
+            progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+
+            progress.started_at = timezone.now()
+            progress.save()
+            progress_data = {
+                "started_at": progress.started_at,
+                "completed_at": progress.completed_at
+            }
+
+        next_lesson = Lesson.objects.filter(
+            module=module,
+            order__gt = lesson.order,
+            is_published=True
+        ).order_by('order').first()
+
+        previous_lesson = Lesson.objects.filter(
+            module=module,
+            order__lt= lesson.order,
+            is_published = True
+        ).order_by('-order').first()
+
+
+        return Response({
+            'lesson': LessonSerializer(lesson).data,
+            'module': ModuleSerializer(module).data,
+            'course': CourseSerializer(course).data,
+            "enrollment": bool(enrollment),
+            "progress": progress_data,
+            "next_lesson": LessonSerializer(next_lesson).data if next_lesson else None,
+            'previous_lesson': LessonSerializer(previous_lesson).data if previous_lesson else None
+        })
+
