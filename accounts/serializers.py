@@ -83,11 +83,12 @@ class CourseProgressSerilizer(serializers.Serializer):
 
 
 class RecentActivitySerializer(serializers.ModelSerializer):
+
+    lesson_title = serializers.CharField(source='lesson.title', read_only=True)
+    module_title = serializers.CharField(source='lesson.module.title', read_only=True)
+    course_title = serializers.CharField(source='lesson.module.course.title', read_only=True)
+
     class Meta:
         model = LessonProgress
-        fields = ['lessons_title', 'module_title', 'course_title', 'is_completed', 'last_accessed']
+        fields = ['lesson_title', 'module_title', 'course_title', 'is_completed', 'last_accessed']
 
-
-    lesson_title = serializers.CharField(source='lesson.title')
-    module_title = serializers.CharField(source='lesson.module.title')
-    course_title = serializers.CharField(source='lesson.module.course.title')

@@ -112,7 +112,7 @@ class LessonProgress(models.Model):
     time_spent_minutes = models.PositiveIntegerField(default=0)
     last_accessed = models.DateTimeField(auto_now=True)
 
-    # resume to continue functions
+    # resume to continue function
     resume_time = models.PositiveIntegerField(default=0)  # for video contnnt
     last_read_position = models.PositiveIntegerField(
         default=0)  # for text content

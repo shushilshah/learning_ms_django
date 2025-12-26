@@ -204,7 +204,7 @@ class LearningDashboardAPIView(APIView):
             course = enrollment.course
             total_lessons = Lesson.objects.filter(module__course=course, is_published=True).count()
             completed_lessons = LessonProgress.objects.filter(
-                user=request.user, lesson__module__course=course, is_complete=True
+                user=request.user, lesson__module__course=course, is_completed=True
             ).count()
 
             progress_percentage = (completed_lessons/total_lessons * 100) if total_lessons > 0 else 0
@@ -219,7 +219,7 @@ class LearningDashboardAPIView(APIView):
             # recent activity
 
         recent_activities = LessonProgress.objects.filter(user=request.user).select_related(
-                "lesson", "lesson__module", "lesson_module__course").order_by("-last_accessed")[:3]
+                "lesson", "lesson__module", "lesson__module__course").order_by("-last_accessed")[:3]
 
         recent_serializer = RecentActivitySerializer(recent_activities, many=True)
 
