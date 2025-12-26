@@ -176,4 +176,18 @@ class LessonProgressAPIView(APIView):
         progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
         serializer = LessonProgressSerializer(progress)
         return Response(serializer.data)
+
+    def put(self, request, lesson_id):
+        lesson = get_object_or_404(Lesson,id=lesson_id, is_published=True)
+        progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+
+        serializer = LessonProgressSerializer(progress, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_progress = serializer.save()
+            if updated_progress.is_completed and not updated_progress.completed_at:
+                updated_progress.completed_at = timezone.now()
+                updated_progress.save()
+
+            return Response(LessonProgressSerializer(updated_progress).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
