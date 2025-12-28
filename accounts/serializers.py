@@ -92,3 +92,7 @@ class RecentActivitySerializer(serializers.ModelSerializer):
         model = LessonProgress
         fields = ['lesson_title', 'module_title', 'course_title', 'is_completed', 'last_accessed']
 
+
+class TeacherDashboardSerializer(serializers.Serializer):
+    course_title = serializers.CharField()
+    total_students = serializers.IntegerField()

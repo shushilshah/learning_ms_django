@@ -227,3 +227,82 @@ class LearningDashboardAPIView(APIView):
             "course_progress": course_progress_data,
             "recent_activities": recent_serializer.data
         })
+
+
+
+class TeacherDashboardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        teacher = request.user
+
+        courses = Course.objects.filter(teacher=teacher)
+        approved_courses = courses.filter(is_published=True)
+        pending_courses = courses.filter(is_published=False)
+
+        course_data = []
+        for course in approved_courses:
+            total_students = Enrollment.objects.filter(course=course, is_active=True).count()
+            course_data.append(
+                {
+                    "course_title": course.title,
+                    "total_students": total_students
+                }
+            )
+
+            return Response({
+                "course_data": course_data,
+                "approved_courses": [c.title for c in approved_courses],
+                "pending_courses": [c.title for c in pending_courses]
+            })
+
+
+class CreateCourseTeacherAPIView(generics.CreateAPIView):
+    serializer_class = CourseSerializer
+    permission_class = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(teacher=self.request.user, is_published=False)
+
+
+class EditCourseTeacherAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+
+        if course.teacher != request.user:
+            return Response({
+                "Error": "Not Allowed"
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = CourseSerializer(course, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class CreateModuleTeacherAPIView(APIView):
+    parser_classes = [IsAuthenticated]
+
+    def post(self, request, course_id):
+        course = get_object_or_404(Course, id=course_id)
+
+        if not course.is_published:
+            return Response({
+                "error": "Course not approved yet."
+            })
+        
+        if course.teacher != request.user:
+            return Response({
+                "error": "Not Allowed"
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ModuleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(course=course)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

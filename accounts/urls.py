@@ -12,7 +12,11 @@ urlpatterns = [
     path("lessons/<int:lesson_id>/", LessonDetailAPIView.as_view(), name="api_lesson"),
     path("modules/<int:module_id>/", ModuleDetailAPIView.as_view(), name="api_module"),
     path('lessons/<int:lesson_id>/progress/', LessonProgressAPIView.as_view(), name='api_lesson_progress'),
-    path('dashboard/', LearningDashboardAPIView.as_view(), name='api_learning_dashboard')
+    path('dashboard/', LearningDashboardAPIView.as_view(), name='api_learning_dashboard'),
+    path('teacher/dashboard/', TeacherDashboardAPIView.as_view(), name='api_teacher_dashboard'),
+    path('teacher/courses/create/', CreateCourseTeacherAPIView.as_view(), name="api_create_course_teacher"),
+    path('teacher/courses/<int:course_id>/edit/', EditCourseTeacherAPIView.as_view(), name="api_edit_course_teacher"),
+    path('teacher/courses/<int:course_id/modules/create/', CreateModuleTeacherAPIView.as_view(), name="api_create_module_teacher")
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]
