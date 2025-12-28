@@ -18,7 +18,9 @@ urlpatterns = [
     path('teacher/courses/<int:course_id>/edit/', EditCourseTeacherAPIView.as_view(), name="api_edit_course_teacher"),
     path('teacher/courses/<int:course_id>/modules/create/', CreateModuleTeacherAPIView.as_view(), name="api_create_module_teacher"),
     path('teacher/courses/detail/', TeacherCourseDetailAPIView.as_view(), name="api_course_detail_teacher"),
-    path('teacher/lessons/create/', CreateLessonTeacherAPIView.as_view(), name="api_crate_lesson_teacher")
+    path('teacher/lessons/create/', CreateLessonTeacherAPIView.as_view(), name="api_crate_lesson_teacher"),
+    path('student/courses/<int:course_id>/resume/', ResumeCourseStudentAPIView.as_view(), name="api_resume_course_student"),
+    path('student/lessons/<int:course_id>/complete/', MarkLessonCompleteAPIView.as_view(), name="api_mark_lesson_complete_student")
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]

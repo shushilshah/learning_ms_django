@@ -341,3 +341,54 @@ class CreateLessonTeacherAPIView(APIView):
             serializer.save(course=course)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ResumeCourseStudentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, course_id):
+        lessons = Lesson.objects.filter(module__course_id = course_id, is_published=True).order_by("module__order", "order")
+        progress_qs= LessonProgress.objects.filter(user=request.user, lesson__in = lessons)
+
+        incomplete = progress_qs.filter(is_completed=False).order_by("started_at").first()
+        if incomplete:
+            return Response({
+                "resume_lesson_id": incomplete.lesson.id
+            }, status=200)
+        
+        last_accessed = progress_qs.order_by("-started_at").first()
+        if last_accessed:
+            return Response({
+                "resume_lesson_id": last_accessed.lesson.id,
+                "resume_lesson": last_accessed.lesson.title,
+            }, status=200)
+        
+        first_lesson = lessons.first()
+        if first_lesson:
+            return Response({
+                "resume_lesson_id": first_lesson.id
+            }, status=200)
+        
+        return Response({
+            "course_id": course_id,
+            "message": "No lessons found"
+        }, status=200)
+    
+
+
+class MarkLessonCompleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, lesson_id):
+        lesson = get_object_or_404(Lesson, id=lesson_id, is_published=True)
+        progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+
+        if not progress.is_completed:
+            progress.is_completed = True
+            progress.completed_at = timezone.now()
+            progress.save()
+
+        return Response({
+            "status": "success",
+            "lesson_id": lesson.id
+        }, status=status.HTTP_200_OK)

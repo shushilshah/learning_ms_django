@@ -354,6 +354,8 @@ def course_detail(request, course_id):
     }
     return render(request, 'course/course_detail.html', context)
 
+
+
 @login_required
 def module_detail(request, module_id):
     module = Module.objects.get(id=module_id, is_published=True)
