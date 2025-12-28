@@ -20,7 +20,8 @@ urlpatterns = [
     path('teacher/courses/detail/', TeacherCourseDetailAPIView.as_view(), name="api_course_detail_teacher"),
     path('teacher/lessons/create/', CreateLessonTeacherAPIView.as_view(), name="api_crate_lesson_teacher"),
     path('student/courses/<int:course_id>/resume/', ResumeCourseStudentAPIView.as_view(), name="api_resume_course_student"),
-    path('student/lessons/<int:course_id>/complete/', MarkLessonCompleteAPIView.as_view(), name="api_mark_lesson_complete_student")
+    path('student/lessons/<int:course_id>/complete/', MarkLessonCompleteAPIView.as_view(), name="api_mark_lesson_complete_student"),
+    path('student/lessons/<int:lesson_id>/time-spent/', UpdateTimeSpentStudentAPIView.as_view(), name="api_update_time_spent")
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]

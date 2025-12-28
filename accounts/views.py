@@ -392,3 +392,30 @@ class MarkLessonCompleteAPIView(APIView):
             "status": "success",
             "lesson_id": lesson.id
         }, status=status.HTTP_200_OK)
+    
+
+
+class UpdateTimeSpentStudentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, lesson_id):
+        lesson = get_object_or_404(Lesson, id=lesson_id, is_published=True)
+        time_spent = request.data.get("time_spent", 0)
+
+        try:
+            time_spent = int(time_spent)
+        except(ValueError, TypeError):
+            return Response({
+                "status": "error",
+                "message": "Invalid time value"
+            }, status=400)
+        
+        progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+        progress.time_spent_minutes += time_spent
+        progress.save()
+
+        return Response({
+            "status": "success",
+            "lesson_id": lesson.id,
+            "time_spent_minuts": progress.time_spent_minutes
+        }, status=200)
