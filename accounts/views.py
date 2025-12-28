@@ -284,7 +284,7 @@ class EditCourseTeacherAPIView(APIView):
     
 
 class CreateModuleTeacherAPIView(APIView):
-    parser_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, course_id):
         course = get_object_or_404(Course, id=course_id)
@@ -317,3 +317,27 @@ class TeacherCourseDetailAPIView(APIView):
         return Response({
             "Courses": serializer.data
         }, status=status.HTTP_200_OK)
+    
+
+class CreateLessonTeacherAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, module_id):
+        module = get_object_or_404(Module, id=module_id)
+        course = module.course
+
+        if not course.is_published():
+            return Response({
+                "error": "Course not approved yet."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if course.teacher != request.user:
+            return Response({
+                "error": 'You are not allowed.'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = LessonSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(course=course)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

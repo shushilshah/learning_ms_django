@@ -16,8 +16,9 @@ urlpatterns = [
     path('teacher/dashboard/', TeacherDashboardAPIView.as_view(), name='api_teacher_dashboard'),
     path('teacher/courses/create/', CreateCourseTeacherAPIView.as_view(), name="api_create_course_teacher"),
     path('teacher/courses/<int:course_id>/edit/', EditCourseTeacherAPIView.as_view(), name="api_edit_course_teacher"),
-    path('teacher/courses/<int:course_id/modules/create/', CreateModuleTeacherAPIView.as_view(), name="api_create_module_teacher"),
-    path('teacher/courses/detail/', TeacherCourseDetailAPIView.as_view(), name="api_course_detail_teacher")
+    path('teacher/courses/<int:course_id>/modules/create/', CreateModuleTeacherAPIView.as_view(), name="api_create_module_teacher"),
+    path('teacher/courses/detail/', TeacherCourseDetailAPIView.as_view(), name="api_course_detail_teacher"),
+    path('teacher/lessons/create/', CreateLessonTeacherAPIView.as_view(), name="api_crate_lesson_teacher")
     # path('profile/', ProfileAPIView.as_view(), name='api_profile'),
     # path('users/', UserListAPIView.as_view(), name='api_users'),
 ]
