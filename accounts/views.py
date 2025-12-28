@@ -306,3 +306,14 @@ class CreateModuleTeacherAPIView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+
+class TeacherCourseDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        course = Course.objects.filter(teacher=request.user)
+        serializer = CourseSerializer(course, many=True)
+        return Response({
+            "Courses": serializer.data
+        }, status=status.HTTP_200_OK)
