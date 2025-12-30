@@ -144,6 +144,7 @@ class Quiz(models.Model):
         return self.title
 
 
+
 class Question(models.Model):
     QUESTION_TYPES = (
         ('mcq', 'Multiple Choice'),
@@ -163,15 +164,36 @@ class Question(models.Model):
         return f"{self.quiz.title} - {self.order}"
 
 
-class Choice(models.Model):
-    question = models.ForeignKey(
-        Question, on_delete=models.CASCADE, related_name='choices')
-    choice_text = models.CharField(max_length=400)
+
+
+
+
+class CorrectAnswer(models.Model):
+    question = models.OneToOneField('Question', on_delete=models.CASCADE, related_name='correct_answer')
+    answer_option = models.ForeignKey('AnswerOption', on_delete=models.CASCADE, related_name='is_correct_for')
+    explanation = models.TextField(blank=True, null=True, help_text="Explanation shown after quiz submission")
+
+    class Meta:
+        verbose_name = "Correct Answer"
+        verbose_name_plural = "Correct Answers"
+
+    def __str__(self):
+        return f"Correct answer for: {self.question.question_text[:50]}"
+    
+
+
+class AnswerOption(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    choice_text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['order']
+
+    def __str__(self):
+        return self.choice_text
+
 
 
 class QuizAttempt(models.Model):
@@ -189,18 +211,21 @@ class QuestionResponse(models.Model):
     attempt = models.ForeignKey(
         QuizAttempt, on_delete=models.CASCADE, related_name='responses')
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_choices = models.ManyToManyField(Choice, blank=True)
+    selected_option = models.ForeignKey(AnswerOption, on_delete=models.CASCADE)
     is_correct = models.BooleanField(default=False)
 
     def evaluate_response(self):
-        if self.question.question_type == 'true_false':
-            selected_choice = self.selected_choices.first()
-            if selected_choice:
-                self.is_correct = selected_choice.is_correct
-        else:
-            correct_choices = set(self.question.choices.filter(
-                is_correct=True).values_list('id', flat=True))
-            selected_choices = set(
-                self.selected_choices.values_list('id', flat=True))
-            self.is_correct = correct_choices == selected_choices
+        correct_option = self.question.correct_answer.answer_option
+        self.is_correct = self.selected_option_id == correct_option.id
         self.save()
+        # if self.question.question_type =='true_false':
+        #     selected_choice = self.selected_choices.first()
+        #     if selected_choice:
+        #         self.is_correct = selected_choice.is_correct
+        # else:
+        #     correct_choices = set(self.question.choices.filter(
+        #         is_correct=True).values_list('id', flat=True))
+        #     selected_choices = set(
+        #         self.selected_choices.values_list('id', flat=True))
+        #     self.is_correct = correct_choices == selected_choices
+        # self.save()

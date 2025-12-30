@@ -8,6 +8,7 @@ from .decorators import role_required
 from lms_system.forms import *
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 
 
 def signup_view(request):
@@ -491,80 +492,9 @@ def update_time_spent(request, lesson_id):
     return JsonResponse({'status': 'error'})
 
 
-@login_required
-def take_quiz(request, quiz_id):
-    quiz = Quiz.objects.get(id=quiz_id, is_published=True)
-
-    # if user is enrolled in course or not
-    if quiz.course:
-        enrollment = Enrollment.objects.get(
-            user=request.user, course=quiz.course, is_active=True)
-        if not enrollment.is_valid():
-            return redirect('course_list')
-
-    # check for exsting active attempt
-    active_attempt = QuizAttempt.objects.filter(
-        user=request.user, quiz=quiz, completed_at__isnull=True).first()
-
-    if not active_attempt:
-        active_attempt = QuizAttempt.objects.create(
-            user=request.user, quiz=quiz)
-
-    questions = quiz.questions.all().prefetch_related('choices')
-
-    context = {
-        'quiz': quiz,
-        'questions': questions,
-        'attempt': active_attempt,
-    }
-    return render(request, 'quizzes/take_quiz.html', context)
 
 
-@login_required
-def submit_quiz(request, attempt_id):
-    attempt = QuizAttempt.objects.get(id=attempt_id, user=request.user)
 
-    if request.method == 'POST':
-        total_questions = attempt.quiz.questions.count()
-        correct_answers = 0
-
-        for question in attempt.quiz.questions.all():
-            selected_choice_id = request.POST.getlist(
-                f'quesiton_{question.id}')
-
-            response = QuestionResponse.objects.create(
-                attempt=attempt, question=question)
-
-            if selected_choice_id:
-                selected_choices = Choice.objects.filter(
-                    id__in=selected_choice_id)
-
-                response.selected_choices.set(selected_choices)
-
-            response.evaluate_response()
-
-            if response.is_correct:
-                correct_answers += 1
-
-        score = (correct_answers / total_questions) * \
-            100 if total_questions > 0 else 0
-        attempt.score = score
-        attempt.is_passed = score >= attempt.quiz.passing_score
-        attempt.save()
-
-        return redirect('quiz_result', attempt_id=attempt.id)
-
-    return redirect('take_quiz', quiz_id=attempt.quiz.id)
-
-
-@login_required
-def quiz_result(request, attempt_id):
-    attempt = QuizAttempt.objects.get(id=attempt_id, user=request.user)
-    context = {
-        'attempt': attempt,
-        'responses': attempt.responses.all().select_related('question'),
-    }
-    return render(request, 'quizzes/quiz_result.html', context)
 
 
 def enroll_course(request, course_id):
@@ -658,3 +588,245 @@ def approve_course(request, course_id):
     course.save()
     messages.success(request, "Course '{course.title}' approved.")
     return redirect('pending_course')
+
+
+
+
+@login_required
+def quiz_page(request, module_id):
+    quizzes = Quiz.objects.filter(module_id=module_id, is_published=True)
+    selected_quiz = None
+    questions = None
+    result = None
+
+    quiz_id = request.GET.get("quiz")
+
+    if quiz_id:
+        selected_quiz = get_object_or_404(Quiz, id=quiz_id)
+
+        if request.method == "POST":
+            score = 0
+            for q in selected_quiz.questions.all():
+                selected = request.POST.get(str(q.id))
+                if selected:
+                    try:
+                        choice = AnswerOption.objects.get(id=selected)
+                        if choice.is_correct:
+                            score += 1
+                    except AnswerOption.DoesNotExist:
+                        pass
+                    score += 1
+
+            percent = int((score / selected_quiz.questions.count()) * 100)
+
+            QuizAttempt.objects.create(
+                user=request.user,
+                quiz=selected_quiz,
+                score=percent,
+                completed_at=timezone.now(),
+                is_passed=(percent >= selected_quiz.passing_score),
+            )
+
+            result = {
+                "score": percent,
+                "passed": percent >= selected_quiz.passing_score
+            }
+
+        else:
+            questions = selected_quiz.questions.prefetch_related("choices")
+
+    return render(request, "quizzes/take_quiz.html", {
+        "quizzes": quizzes,
+        "selected_quiz": selected_quiz,
+        "questions": questions,
+        "result": result
+    })
+
+
+@login_required
+@role_required(['teacher'])
+def create_quiz(request, course_id):
+    courses = get_object_or_404(Course, id=course_id)
+
+    modules = courses.modules.all()
+   
+    
+
+    if request.method == "POST":
+        module_id = request.POST.get("module")
+        title = request.POST.get("title", "").strip()
+        description = request.POST.get("description", "").strip()
+        time_limit = request.POST.get("time_limit_minutes")
+        pass_mark = request.POST.get("passing_score")
+
+        errors = []
+        if not module_id:
+            errors.append("Module is required.")
+        if not title:
+            errors.append("Title is required.")
+
+        try:
+            time_limit_val = int(time_limit) if time_limit not in (None, "") else 0
+        except (TypeError, ValueError):
+            time_limit_val = 0
+            errors.append("Time limit must be an integer.")
+
+        try:
+            pass_mark_val = int(pass_mark) if pass_mark not in (None, "") else 0
+        except (TypeError, ValueError):
+            pass_mark_val = 0
+            errors.append("Passing score must be an integer.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, "quizzes/teacher_quiz_create.html", {
+                "modules": modules,
+                "data": request.POST,
+            })
+
+        quiz = Quiz.objects.create(
+            module_id=module_id,
+            title=title,
+            description=description,
+            time_limit_minutes=time_limit_val,
+            passing_score=pass_mark_val,
+            is_published=False,
+        )
+
+        return redirect("add_question", quiz.id)
+
+    return render(request, "quizzes/teacher_quiz_create.html", {
+        "courses": courses,
+        "modules": modules
+    })
+
+
+
+# @login_required
+# @role_required(['teacher'])
+# def add_question(request, quiz_id):
+#     quiz = get_object_or_404(Quiz, id=quiz_id)
+
+#     if request.method == "POST":
+#         # Check if multiple questions exist in POST
+#         questions_data = request.POST.getlist('questions')  # we will parse manually
+#         # Since we used nested input names, it's better to loop over keys
+#         questions_dict = {}
+#         for key, value in request.POST.items():
+#             # key example: questions[1][question], questions[1][option1], questions[1][correct]
+#             if key.startswith("questions"):
+#                 # Extract indices
+#                 parts = key.replace("questions[", "").replace("]", "").split("[")
+#                 q_index = parts[0]
+#                 field = parts[1]
+
+#                 if q_index not in questions_dict:
+#                     questions_dict[q_index] = {}
+#                 questions_dict[q_index][field] = value
+
+#         # Save all questions
+#         for q_index, q_data in questions_dict.items():
+#             question_text = q_data.get("question")
+#             correct_option = q_data.get("correct")
+#             options = {
+#                 "option1": q_data.get("option1"),
+#                 "option2": q_data.get("option2"),
+#                 "option3": q_data.get("option3"),
+#                 "option4": q_data.get("option4"),
+#             }
+
+#             Question.objects.create(
+#                 quiz=quiz,
+#                 question_text=question_text,
+#                 option1=options["option1"],
+#                 option2=options["option2"],
+#                 option3=options["option3"],
+#                 option4=options["option4"],
+#                 correct_answer=correct_option
+#             )
+
+#         # Check if user clicked Publish Quiz
+#         if "publish" in request.POST:
+#             quiz.is_published = True
+#             quiz.save()
+#             messages.success(request, "Quiz published successfully!")
+#             return redirect("quiz_detail", quiz_id=quiz.id)
+#         else:
+#             messages.success(request, "Questions added successfully! You can add more.")
+#             return redirect("add_questions", quiz_id=quiz.id)
+
+#     return render(request, "quizzes/teacher_add_question.html", {"quiz": quiz})
+
+
+@login_required
+@role_required(['teacher'])
+def add_question(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+
+    if request.method == "POST":
+        questions_dict = {}
+
+        for key, value in request.POST.items():
+            if key.startswith("questions"):
+                parts = key.replace("questions[", "").replace("]", "").split("[")
+                q_index = parts[0]
+                field = parts[1]
+
+                questions_dict.setdefault(q_index, {})[field] = value
+
+        for _, q_data in questions_dict.items():
+            with transaction.atomic():
+
+                # 1️⃣ Create Question
+                question = Question.objects.create(
+                    quiz=quiz,
+                    question_text=q_data.get("question"),
+                    question_type="mcq",
+                )
+
+                # 2️⃣ Create Answer Options
+                options = []
+                for i in range(1, 5):
+                    option = AnswerOption.objects.create(
+                        question=question,
+                        choice_text=q_data.get(f"option{i}"),
+                        order=i
+                    )
+                    options.append(option)
+
+                # 3️⃣ Create CorrectAnswer
+                # correct_index = int(q_data.get("correct")) - 1
+                correct_value = q_data.get("correct")
+
+                option_map = {
+                    "option1": 0,
+                    "option2": 1,
+                    "option3": 2,
+                    "option4": 3,
+                }
+
+                if correct_value not in option_map:
+                    raise ValueError(f"Invalid correct option: {correct_value}")
+                
+                correct_index = option_map[correct_value]
+                correct_option = options[correct_index]
+                correct_option.is_correct = True
+                correct_option.save()
+
+
+                CorrectAnswer.objects.create(
+                    question=question,
+                    answer_option=correct_option
+                )
+
+        if "publish" in request.POST:
+            quiz.is_published = True
+            quiz.save()
+            messages.success(request, "Quiz published successfully!")
+            return redirect("add_question", quiz_id=quiz.id)
+
+        messages.success(request, "Questions added successfully!")
+        return redirect("add_question", quiz_id=quiz.id)
+
+    return render(request, "quizzes/teacher_add_question.html", {"quiz": quiz})

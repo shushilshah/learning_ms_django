@@ -4,6 +4,7 @@
 
 <button><a href="{% url 'create_course' %}">➕ Create Course</a></button>
 
+
 <hr />
 <br />
 <br />
@@ -11,6 +12,7 @@
 <h2 style="margin-bottom: -20px; margin-top: -30px;">Approved Course</h2>
 <br />
 {% for course in approved_courses %}
+
 <h2>{{course.title}}</h2>
 
 <p>Students Enrolled: {{course.total_students}}</p>
@@ -21,6 +23,7 @@
 <button>
   <a href="{% url 'create_lesson' course.id %}">➕ Create Lesson</a>
 </button>
+<button><a href="{% url 'create_quiz' course.id %}">Create Quiz</a></button>
 <button>
   <a href="{% url 'edit_course' course.id %}">Edit Course</a>
 </button>

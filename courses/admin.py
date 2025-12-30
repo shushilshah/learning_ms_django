@@ -14,10 +14,18 @@ class ModuleInline(admin.TabularInline):
     extra = 1
 
 
-class ChoiceInline(admin.TabularInline):
-    model = Choice
+class AnswerOptionInline(admin.TabularInline):
+    model = AnswerOption
     extra = 4
 
+class CorrectAnswerInline(admin.StackedInline):
+    model = CorrectAnswer
+    max_num = 1
+    min_num = 1
+
+class QuestionInline(admin.StackedInline):
+    model = Question
+    extra = 1
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -59,13 +67,16 @@ class LessonAdmin(admin.ModelAdmin):
 class QuizAdmin(admin.ModelAdmin):
     list_display = ['title', 'course', 'module',
                     'passing_score', 'is_published']
-    list_filter = ['is_published']
+    list_filter = ['course','is_published']
+    search_fields = ['title']
 
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ['question_text', 'quiz', 'question_type', 'points']
-    inlines = [ChoiceInline]
+    list_display = ['question_text', 'quiz', 'question_type', 'points', 'order']
+    list_filter = ['quiz', 'question_type']
+    ordering = ['quiz', 'order']
+    inlines = [AnswerOptionInline, CorrectAnswerInline]
 
 
 @admin.register(LessonProgress)

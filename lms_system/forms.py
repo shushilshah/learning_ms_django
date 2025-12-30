@@ -1,5 +1,5 @@
 from django import forms
-from courses.models import Course, Module, Lesson, Quiz, Question, Choice
+from courses.models import Course, Module, Lesson, Quiz, Question, AnswerOption
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -40,16 +40,40 @@ class LessonForm(forms.ModelForm):
         return cleaned_data
 
 
+class QuizForm(forms.ModelForm):
+    class Meta:
+        model = Quiz
+        fields = ['title', 'course', 'module','description', 'time_limit_minutes', 'passing_score', 'is_published']
+
+
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = ['quiz', 'question_text', 'question_type', 'order', 'points']
 
 
-class ChoiceForm(forms.ModelForm):
+class AnswerOptionForm(forms.ModelForm):
     class Meta:
-        model = Choice
+        model = AnswerOption
         fields = ['question', 'choice_text', 'is_correct', 'order']
+
+
+
+class ChoiceBuldkForm(forms.Form):
+    choice1 = forms.CharField()
+    choice2 = forms.CharField()
+    choice3 = forms.CharField()
+    choice4 = forms.CharField()
+
+    correct_choice = forms.ChoiceField(
+        choices = [
+            ('1', "Choice 1"),
+            ('2', "Choice 2"),
+            ('3', "Choice 3"),
+            ('4', "Choice 4"),
+        ],
+        widget = forms.RadioSelect
+    )
 
 
 class SignupForm(UserCreationForm):

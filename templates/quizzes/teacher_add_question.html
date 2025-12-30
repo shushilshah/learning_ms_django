@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Questions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-body p-4">
+
+            <h4 class="fw-bold mb-3">➕ Add Questions</h4>
+            <p class="text-muted">Quiz: {{ quiz.title }}</p>
+
+            <form method="post" id="quizForm">
+                {% csrf_token %}
+
+                <div id="questions-container">
+                    <!-- First question block will be added here -->
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="button" id="addQuestionBtn" class="btn btn-success rounded-pill">
+                        Add Another Question
+                    </button>
+
+                    <button type="submit" name="publish" class="btn btn-outline-primary rounded-pill">
+                        Publish Quiz
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    let questionCount = 0;
+
+    function createQuestionBlock() {
+        questionCount++;
+
+        const questionBlock = document.createElement('div');
+        questionBlock.classList.add('mb-4', 'border', 'p-3', 'rounded-3', 'bg-white');
+        questionBlock.innerHTML = `
+            <h5>Question ${questionCount}</h5>
+            <div class="mb-3">
+                <label class="form-label">Question</label>
+                <textarea name="questions[${questionCount}][question]" class="form-control" required></textarea>
+            </div>
+            ${[1,2,3,4].map(i => `
+                <div class="input-group mb-2">
+                    <div class="input-group-text">
+                        <input type="radio" name="questions[${questionCount}][correct]" value="option${i}" required>
+                    </div>
+                    <input type="text" name="questions[${questionCount}][option${i}]" class="form-control" placeholder="Option ${i}" required>
+                </div>
+            `).join('')}
+        `;
+
+        document.getElementById('questions-container').appendChild(questionBlock);
+    }
+
+    // Add the first question initially
+    createQuestionBlock();
+
+    document.getElementById('addQuestionBtn').addEventListener('click', createQuestionBlock);
+</script>
+
+</body>
+</html>
