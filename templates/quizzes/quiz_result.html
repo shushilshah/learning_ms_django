@@ -1,28 +1,100 @@
-<h3>Quiz Result</h3>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+</head>
+<body>
+    <div class="container my-5">
 
-<p>Score: {{ attempt.score }}</p>
-<p>Status:
-  {% if attempt.is_passed %}
-    <span class="text-success">Passed</span>
-  {% else %}
-    <span class="text-danger">Failed</span>
-  {% endif %}
-</p>
+  <!-- Result Summary Card -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body text-center">
 
-<hr>
+      <h2 class="fw-bold mb-2">Quiz Result</h2>
 
-{% for r in responses %}
-  <p>
-    <strong>{{ r.question.question_text }}</strong><br>
-    Your answer: {{ r.selected_option.choice_text }}<br>
+      <div class="display-6 fw-bold mb-3">
+        {{ attempt.score }} Points
+      </div>
 
-    {% if r.is_correct %}
-      <span class="text-success">✔ Correct</span>
-    {% else %}
-      <span class="text-danger">✖ Wrong</span>
-      <br>
-      Correct:
-      {{ r.question.correct_answer.answer_option.choice_text }}
-    {% endif %}
-  </p>
-{% endfor %}
+      {% if attempt.is_passed %}
+        <span class="badge bg-success px-4 py-2 fs-6">
+          ✅ Passed
+        </span>
+      {% else %}
+        <span class="badge bg-danger px-4 py-2 fs-6">
+          ❌ Failed
+        </span>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Question Review -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+
+      <h5 class="fw-bold mb-4">Answer Review</h5>
+
+      {% for r in responses %}
+        <div class="border rounded p-3 mb-3
+             {% if r.is_correct %}border-success{% else %}border-danger{% endif %}">
+
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-semibold mb-0">
+              {{ forloop.counter }}. {{ r.question.question_text }}
+            </h6>
+
+            {% if r.is_correct %}
+              <span class="badge bg-success">✔ Correct</span>
+            {% else %}
+              <span class="badge bg-danger">✖ Wrong</span>
+            {% endif %}
+          </div>
+
+          <p class="mb-1">
+            <strong>Your Answer:</strong>
+            <span class="{% if r.is_correct %}text-success{% else %}text-danger{% endif %}">
+              {{ r.selected_option.choice_text }}
+            </span>
+          </p>
+
+          {% if not r.is_correct %}
+            <p class="mb-0">
+              <strong>Correct Answer:</strong>
+              <span class="text-success">
+                {{ r.question.correct_answer.answer_option.choice_text }}
+              </span>
+            </p>
+          {% endif %}
+
+        </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="text-center mt-4">
+    <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary me-2">
+      Back to Dashboard
+    </a>
+    <a href="{% url 'start_quiz' attempt.quiz.id %}" class="btn btn-primary">
+      Retake Quiz
+    </a>
+  </div>
+
+</div>
+
+</body>
+</html>
