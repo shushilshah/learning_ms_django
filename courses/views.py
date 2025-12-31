@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import *
@@ -616,7 +617,9 @@ def take_quiz(request, attempt_id):
     questions = attempt.quiz.questions.prefetch_related("options")
     return render(request, "quizzes/take_quiz.html", {
         "attempt": attempt,
-        "questions": questions
+        "questions": questions,
+        "duration_seconds": attempt.quiz.duration_minutes * 60,
+        "started_at": attempt.started_at.timestamp,
     })
 
 
@@ -633,7 +636,7 @@ def submit_quiz(request, attempt_id):
     if attempt.completed_at:
         return redirect('quiz_result', attempt_id=attempt.id)
 
-    quiz_duration = timedelta(minuts=attempt.quiz.duration_minutes)
+    quiz_duration = timedelta(minutes=attempt.quiz.duration_minutes)
     time_elapsed = timezone.now() - attempt.started_at
 
     # Time Over ---> auto submit features

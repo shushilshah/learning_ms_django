@@ -1,26 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+
+
+</head>
+<body>
+<style>
+  body {
+    background: #f4f6f9;
+  }
+
+  .quiz-card {
+    border-radius: 16px;
+    border: none;
+  }
+
+  .option-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .option-card:hover {
+    border-color: #0d6efd;
+    background: #f0f6ff;
+  }
+
+  .form-check-input:checked + label .option-card {
+    border-color: #0d6efd;
+    background: #e7f1ff;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+  }
+
+  .timer-box {
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px 20px;
+  }
+
+  .question-box {
+    display: none;
+  }
+
+  .question-box.active {
+    display: block;
+  }
+</style>
+
+<!-- ⏳ TIMER -->
+<div class="position-sticky top-0 z-3 mb-4">
+  <div class="container">
+    <div class="timer-box shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong>⏳ Time Remaining</strong>
+        <span id="timer" class="fs-5 fw-bold">--:--</span>
+      </div>
+      <div class="progress">
+        <div id="timeBar" class="progress-bar bg-light"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <form method="post" action="{% url 'submit_quiz' attempt.id %}">
   {% csrf_token %}
 
-  {% for q in questions %}
-    <div class="mb-4">
-      <h5>{{ forloop.counter }}. {{ q.question_text }}</h5>
+  <div class="container">
+    {% for q in questions %}
+      <div class="card quiz-card shadow-sm mb-4 question-box {% if forloop.first %}active{% endif %}">
+        <div class="card-body">
 
-      {% for opt in q.options.all %}
-        <div class="form-check">
-          <input class="form-check-input"
-                 type="radio"
-                 name="question_{{ q.id }}"
-                 value="{{ opt.id }}"
-                 required>
-          <label class="form-check-label">
-            {{ opt.choice_text }}
-          </label>
+          <div class="d-flex justify-content-between mb-3">
+            <span class="badge bg-primary">
+              Question {{ forloop.counter }} of {{ questions|length }}
+            </span>
+          </div>
+
+          <h5 class="fw-bold mb-4">{{ q.question_text }}</h5>
+
+          {% for opt in q.options.all %}
+            <div class="form-check mb-3">
+              <input
+                class="form-check-input d-none"
+                type="radio"
+                name="question_{{ q.id }}"
+                id="opt_{{ opt.id }}"
+                value="{{ opt.id }}"
+                required
+              >
+              <label class="form-check-label w-100" for="opt_{{ opt.id }}">
+                <div class="option-card">
+                  {{ opt.choice_text }}
+                </div>
+              </label>
+            </div>
+          {% endfor %}
+
         </div>
-      {% endfor %}
-    </div>
-  {% endfor %}
+      </div>
+    {% endfor %}
 
-  <button type="submit" class="btn btn-primary">
-    Submit Quiz
-  </button>
+    <!-- NAVIGATION -->
+    <div class="d-flex justify-content-between mb-5">
+      <button type="button" id="prevBtn" class="btn btn-outline-secondary" disabled>
+        ⬅ Previous
+      </button>
+
+      <button type="button" id="nextBtn" class="btn btn-primary">
+        Next ➡
+      </button>
+
+      <button type="submit" id="submitBtn" class="btn btn-success d-none">
+        🚀 Submit Quiz
+      </button>
+    </div>
+  </div>
 </form>
+
+<script>
+  const questions = document.querySelectorAll(".question-box");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
+
+  let current = 0;
+
+  function showQuestion(index) {
+    questions.forEach((q, i) => {
+      q.classList.toggle("active", i === index);
+    });
+
+    prevBtn.disabled = index === 0;
+    nextBtn.classList.toggle("d-none", index === questions.length - 1);
+    submitBtn.classList.toggle("d-none", index !== questions.length - 1);
+  }
+
+  prevBtn.onclick = () => {
+    if (current > 0) {
+      current--;
+      showQuestion(current);
+    }
+  };
+
+  nextBtn.onclick = () => {
+    if (current < questions.length - 1) {
+      current++;
+      showQuestion(current);
+    }
+  };
+
+  showQuestion(current);
+
+  // ⏳ TIMER
+  const duration = {{ duration_seconds }};
+  const startedAt = {{ started_at }};
+  const now = Math.floor(Date.now() / 1000);
+  let remaining = duration - (now - startedAt);
+
+  const timerEl = document.getElementById("timer");
+  const barEl = document.getElementById("timeBar");
+
+  function updateTimer() {
+    if (remaining <= 0) {
+      document.querySelector("form").submit();
+      return;
+    }
+
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+
+    timerEl.innerText =
+      minutes + ":" + String(seconds).padStart(2, "0");
+
+    barEl.style.width = (remaining / duration) * 100 + "%";
+    remaining--;
+  }
+
+  updateTimer();
+  setInterval(updateTimer, 1000);
+</script>
+
+</body>
+</html>
