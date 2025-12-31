@@ -644,7 +644,7 @@ def submit_quiz(request, attempt_id):
         attempt.is_passed = False
         attempt.save()
         return redirect('quiz_result', attempt_id=attempt.id)
-        
+    
 
     total_score = 0
     max_score = 0
