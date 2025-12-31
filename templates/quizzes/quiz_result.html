@@ -1,0 +1,28 @@
+<h3>Quiz Result</h3>
+
+<p>Score: {{ attempt.score }}</p>
+<p>Status:
+  {% if attempt.is_passed %}
+    <span class="text-success">Passed</span>
+  {% else %}
+    <span class="text-danger">Failed</span>
+  {% endif %}
+</p>
+
+<hr>
+
+{% for r in responses %}
+  <p>
+    <strong>{{ r.question.question_text }}</strong><br>
+    Your answer: {{ r.selected_option.choice_text }}<br>
+
+    {% if r.is_correct %}
+      <span class="text-success">✔ Correct</span>
+    {% else %}
+      <span class="text-danger">✖ Wrong</span>
+      <br>
+      Correct:
+      {{ r.question.correct_answer.answer_option.choice_text }}
+    {% endif %}
+  </p>
+{% endfor %}

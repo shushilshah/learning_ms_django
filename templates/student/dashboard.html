@@ -4,6 +4,12 @@
 
 {% for item in courses_progress %}
 <p>{{ item.course.title }} — {{ item.progress_percentage }}%</p>
+{% for quiz in quizzes %}
+<a href="{% url 'start_quiz' quiz.id %}" class='btn btn-primary'>Start Quiz</a>
+{% endfor %}
 {% empty %}
 <p>No enrolled courses</p>
-{% endfor %} {% endblock %}
+{% endfor %}
+
+
+{% endblock %}

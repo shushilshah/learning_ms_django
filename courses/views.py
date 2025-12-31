@@ -87,6 +87,7 @@ def role_redirect(request):
 @role_required(['student'])
 def student_dashboard(request):
     user = request.user
+    quizzes = Quiz.objects.filter(is_published=True)
 
     enrollments = Enrollment.objects.filter(
         user=user, is_active=True
@@ -130,6 +131,7 @@ def student_dashboard(request):
     context = {
         'courses_progress': courses_progress,
         'recent_progress': recent_progress,
+        "quizzes": quizzes
     }
 
     return render(request, 'student/dashboard.html', context)
@@ -589,6 +591,84 @@ def approve_course(request, course_id):
     messages.success(request, "Course '{course.title}' approved.")
     return redirect('pending_course')
 
+
+
+@login_required
+@role_required(['student'])
+def start_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id, is_published=True)
+
+    # prevent multiple active attempts
+
+    attempt, created  = QuizAttempt.objects.get_or_create(
+        user=request.user,
+        quiz=quiz,
+        completed_at__isnull = True
+    )
+    return redirect('take_quiz', attempt_id=attempt.id)
+
+
+@login_required
+@role_required(['student'])
+def take_quiz(request, attempt_id):
+    attempt = get_object_or_404(QuizAttempt, id=attempt_id, user=request.user)
+
+    questions = attempt.quiz.questions.prefetch_related("options")
+    return render(request, "quizzes/take_quiz.html", {
+        "attempt": attempt,
+        "questions": questions
+    })
+
+
+@login_required
+def submit_quiz(request, attempt_id):
+    attempt = get_object_or_404(
+        QuizAttempt,
+        id=attempt_id,
+        user=request.user,
+        completed_at__isnull=True
+    )
+
+    total_score = 0
+    max_score = 0
+
+    for question in attempt.quiz.questions.all():
+        selected_option_id = request.POST.get(f"question_{question.id}")
+        if not selected_option_id:
+            continue
+
+        selected_option = AnswerOption.objects.get(id=selected_option_id)
+
+        response = QuestionResponse.objects.create(
+            attempt=attempt,
+            question=question,
+            selected_option=selected_option
+        )
+        response.evaluate_response()
+
+        max_score += question.points
+        if response.is_correct:
+            total_score += question.points
+
+    attempt.score = total_score
+    attempt.is_passed = total_score >= (max_score * 0.5)
+    attempt.completed_at = timezone.now()
+    attempt.save()
+
+    return redirect("quiz_result", attempt_id=attempt.id)
+
+
+
+@login_required
+def quiz_result(request, attempt_id):
+    attempt = get_object_or_404(QuizAttempt, id=attempt_id, user=request.user)
+
+    responses = attempt.responses.select_related("question", "selected_option")
+
+    return render(request, "quizzes/quiz_result.html", {
+        "attempt": attempt,
+        "responses": responses
+    })
 
 
 
