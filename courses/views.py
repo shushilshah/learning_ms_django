@@ -629,6 +629,23 @@ def submit_quiz(request, attempt_id):
         completed_at__isnull=True
     )
 
+    # prevent re-submit
+    if attempt.completed_at:
+        return redirect('quiz_result', attempt_id=attempt.id)
+
+    quiz_duration = timedelta(minuts=attempt.quiz.duration_minutes)
+    time_elapsed = timezone.now() - attempt.started_at
+
+    # Time Over ---> auto submit features
+
+    if time_elapsed > quiz_duration:
+        attempt.completed_at = timezone.now()
+        attempt.score = 0
+        attempt.is_passed = False
+        attempt.save()
+        return redirect('quiz_result', attempt_id=attempt.id)
+        
+
     total_score = 0
     max_score = 0
 

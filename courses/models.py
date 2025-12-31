@@ -130,6 +130,7 @@ class Notes(models.Model):
 
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
+    duration_minutes = models.PositiveIntegerField(default=10, help_text="Quiz duration in minutes")
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name='quizzes', null=True, blank=True)
     module = models.ForeignKey(
