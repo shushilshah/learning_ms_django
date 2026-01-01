@@ -10,7 +10,7 @@ from lms_system.forms import *
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-
+from rest_framework import status
 
 def signup_view(request):
     if request.method == 'POST':
@@ -88,7 +88,14 @@ def role_redirect(request):
 @role_required(['student'])
 def student_dashboard(request):
     user = request.user
-    quizzes = Quiz.objects.filter(is_published=True)
+    # quizzes = Quiz.objects.filter(is_published=True)
+
+    # for quiz in quizzes:
+    #     quiz.can_start = ModuleProgress.objects.filter(
+    #         user=request.user,
+    #         module = quiz.module,
+    #         is_completed = True
+    #     ).exists()
 
     enrollments = Enrollment.objects.filter(
         user=user, is_active=True
@@ -98,6 +105,24 @@ def student_dashboard(request):
 
     for enrollment in enrollments:
         course = enrollment.course
+        modules = course.modules.all()
+
+        module_data = []
+        for module in modules:
+            quizzes = module.quizzes.filter(is_published=True)
+
+            for quiz in quizzes:
+                quiz.can_start = ModuleProgress.objects.filter(
+                    user=request.user,
+                    module_id=module.id,
+                    is_completed=True
+                ).exists()
+
+            module_data.append({
+                'module': module,
+                'quizzes': quizzes
+            })
+
 
         total_lessons = Lesson.objects.filter(
             module__course=course, is_published=True
@@ -116,6 +141,7 @@ def student_dashboard(request):
 
         courses_progress.append({
             'course': course,
+            'modules': module_data,
             'progress_percentage': int(progress_percentage),
             'total_lessons': total_lessons,
             'completed_lessons': completed_lessons,
@@ -132,7 +158,7 @@ def student_dashboard(request):
     context = {
         'courses_progress': courses_progress,
         'recent_progress': recent_progress,
-        "quizzes": quizzes
+        # "quizzes": quizzes
     }
 
     return render(request, 'student/dashboard.html', context)
@@ -471,9 +497,29 @@ def mark_lesson_complete(request, lesson_id):
             progress.completed_at = timezone.now()
             progress.save()
 
+        # check module complete or not
+
+        module = lesson.module
+        total_lessons = module.lessons.count()
+        completed_lessons = LessonProgress.objects.filter(
+            user=request.user,
+            lesson__module=module,
+            is_completed=True
+        ).count()
+
+        if total_lessons == completed_lessons:
+            ModuleProgress.objects.update_or_create(
+                user=request.user,
+                module=module,
+                defaults={
+                    'is_completed': True,
+                    'completed_at': timezone.now()
+                }
+            )
+
         return JsonResponse({'status': 'success'})
 
-    return JsonResponse({'status': 'error'})
+    return JsonResponse({'status': 'error'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required
@@ -596,31 +642,73 @@ def approve_course(request, course_id):
 
 @login_required
 @role_required(['student'])
-def start_quiz(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id, is_published=True)
+def start_quiz(request, slug):
+    quiz = get_object_or_404(Quiz, slug=slug, is_published=True)
+
+    # check module complete or not
+    module = quiz.module
+
+    module_progress = ModuleProgress.objects.filter(
+        user=request.user,
+        module=module,
+        is_completed=True
+    ).exists()
+
+    if not module_progress:
+        messages.error(request, "You must complete this module before taking the quiz.")
+        return redirect('student_dashboard')
 
     # prevent multiple active attempts
-
     attempt, created  = QuizAttempt.objects.get_or_create(
         user=request.user,
         quiz=quiz,
         completed_at__isnull = True
     )
-    return redirect('take_quiz', attempt_id=attempt.id)
+    return redirect('take_quiz', slug=quiz.slug)
+
+
+# @login_required
+# @role_required(['student'])
+# def take_quiz(request, slug):
+#     attempt = get_object_or_404(QuizAttempt, slug=slug, user=request.user)
+
+#     questions = attempt.quiz.questions.prefetch_related("options")
+#     return render(request, "quizzes/take_quiz.html", {
+#         "attempt": attempt,
+#         "questions": questions,
+#         "duration_seconds": attempt.quiz.duration_minutes * 60,
+#         "started_at": attempt.started_at.timestamp,
+#     })
 
 
 @login_required
 @role_required(['student'])
-def take_quiz(request, attempt_id):
-    attempt = get_object_or_404(QuizAttempt, id=attempt_id, user=request.user)
+def take_quiz(request, slug):
+    quiz = get_object_or_404(Quiz, slug=slug, is_published=True)
 
-    questions = attempt.quiz.questions.prefetch_related("options")
+    # Get the active attempt for this user and quiz
+    attempt = QuizAttempt.objects.filter(
+        user=request.user,
+        quiz=quiz,
+        completed_at__isnull=True
+    ).first()
+
+    if not attempt:
+        messages.error(request, "No active attempt found for this quiz.")
+        return redirect('student_dashboard')
+
+    questions = quiz.questions.prefetch_related("options")
     return render(request, "quizzes/take_quiz.html", {
         "attempt": attempt,
         "questions": questions,
-        "duration_seconds": attempt.quiz.duration_minutes * 60,
-        "started_at": attempt.started_at.timestamp,
+        "duration_seconds": quiz.duration_minutes * 60,
+        "started_at": attempt.started_at.timestamp(),
     })
+
+
+
+
+
 
 
 @login_required
