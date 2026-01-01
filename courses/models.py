@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
 
 
 class UserProfile(models.Model):
@@ -101,6 +102,18 @@ class Enrollment(models.Model):
         return True
 
 
+
+class ModuleProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE)
+    is_completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ['user', 'module']
+
+
+
 class LessonProgress(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='lesson_progress')
@@ -130,6 +143,7 @@ class Notes(models.Model):
 
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
     duration_minutes = models.PositiveIntegerField(default=10, help_text="Quiz duration in minutes")
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name='quizzes', null=True, blank=True)
@@ -140,6 +154,11 @@ class Quiz(models.Model):
     passing_score = models.PositiveIntegerField(default=50)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
