@@ -79,6 +79,13 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [AnswerOptionInline, CorrectAnswerInline]
 
 
+
+@admin.register(ModuleProgress)
+class ModuleProgressAdmin(admin.ModelAdmin):
+    list_display = ['user', 'module', 'is_completed', 'completed_at']
+    list_filter = ['is_completed']
+
+
 @admin.register(LessonProgress)
 class LessonProgressAdmin(admin.ModelAdmin):
     list_display = ['user', 'lesson', 'is_completed', 'last_accessed']
