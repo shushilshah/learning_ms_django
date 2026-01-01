@@ -1,15 +1,72 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% block content %}
 
-<h2>My Learning Dashboard</h2>
+<div class="container py-5">
+    <h2 class="mb-4 display-5 text-primary fw-bold">📚 My Learning Dashboard</h2>
 
-{% for item in courses_progress %}
-<p>{{ item.course.title }} — {{ item.progress_percentage }}%</p>
-{% for quiz in quizzes %}
-<a href="{% url 'start_quiz' quiz.id %}" class='btn btn-primary'>Start Quiz</a>
-{% endfor %}
-{% empty %}
-<p>No enrolled courses</p>
-{% endfor %}
+    {% if courses_progress %}
+        <div class="row g-4">
 
+            {% for item in courses_progress %}
+                <div class="col-12">
+                    <!-- Course Card -->
+                    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                        <div class="card-header bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0 fw-bold">{{ item.course.title }}</h4>
+                            <span class="badge bg-light text-primary fw-bold px-3 py-2 rounded-pill">{{ item.progress_percentage }}%</span>
+                        </div>
+
+                        <div class="card-body">
+                            <!-- Progress Bar -->
+                            <div class="progress rounded-pill" style="height: 12px;">
+                                <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: {{ item.progress_percentage }}%;" aria-valuenow="{{ item.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="mt-2 text-muted small">{{ item.completed_lessons }} of {{ item.total_lessons }} lessons completed</p>
+
+                            <!-- Modules Accordion -->
+                            <div class="accordion mt-3" id="modulesAccordion{{ forloop.counter }}">
+                                {% for module_data in item.modules %}
+                                    <div class="accordion-item mb-2 shadow-sm rounded-3">
+                                        <h2 class="accordion-header" id="heading{{ forloop.parentloop.counter }}{{ forloop.counter }}">
+                                            <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.parentloop.counter }}{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.parentloop.counter }}{{ forloop.counter }}">
+                                                📦 {{ module_data.module.title }}
+                                            </button>
+                                        </h2>
+                                        <div id="collapse{{ forloop.parentloop.counter }}{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading{{ forloop.parentloop.counter }}{{ forloop.counter }}" data-bs-parent="#modulesAccordion{{ forloop.parentloop.counter }}">
+                                            <div class="accordion-body p-3">
+                                                {% if module_data.quizzes %}
+                                                    <div class="d-grid gap-2">
+                                                        {% for quiz in module_data.quizzes %}
+                                                            {% if quiz.can_start %}
+                                                                <a href="{% url 'start_quiz' quiz.slug %}" class="btn btn-gradient-primary fw-bold">
+                                                                    ▶ {{ quiz.title }}
+                                                                </a>
+                                                            {% else %}
+                                                                <button class="btn btn-secondary fw-semibold" disabled>
+                                                                    🔒 {{ quiz.title }} (Complete Module)
+                                                                </button>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <p class="text-muted fst-italic">No quizzes in this module</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center py-4 fs-5">
+            You are not enrolled in any courses yet. Start learning today! 🚀
+        </div>
+    {% endif %}
+</div>
 
 {% endblock %}
