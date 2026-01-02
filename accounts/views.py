@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 from django.utils import timezone
 
 
+###################################### Creadentials Section #############################################
+
 class SignupAPIView(views.APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -70,6 +72,11 @@ class LogoutAPIView(APIView):
             return Response({
                 "detail": "Invalid token"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+###################################### Landing pages section #####################################
 
 
 class CourseListAPIView(generics.ListAPIView):
@@ -248,6 +255,10 @@ class LearningDashboardAPIView(APIView):
 
 
 
+
+############################################ Teacher Section ##############################
+
+
 class TeacherDashboardAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -360,6 +371,77 @@ class CreateLessonTeacherAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+
+####################### Student Section ################################################
+
+class StudentLearningDashboardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # active enrollments
+        user_enrollments = Enrollment.objects.filter(user=user, is_active=True).select_related('course')
+
+        course_progress = []
+        for enrollment in user_enrollments:
+            course = enrollment.course
+            total_lessons = Lesson.objects.filter(
+                module__course = course,
+                is_published = True
+            ).count()
+            completed_lessons = LessonProgress.objects.filter(
+                user=user,
+                lesson__module__course=course,
+                is_completed=True
+            ).count()
+
+            progress_percentage = (
+                (completed_lessons / total_lessons)*100 if total_lessons > 0 else 0
+            )
+
+            course_progress.append({
+                "course_id": course.id,
+                "course_title": course.title,
+                "progress_percentage": round(progress_percentage,2),
+                "total_lessons": total_lessons,
+                "completed_lessons": completed_lessons,
+                "enrollment_id": enrollment.id,
+                # "enrolled_at": enrollment.created_at,
+            })
+
+            # recent activity
+
+            recent_activities = LessonProgress.objects.filter(user=user).select_related(
+                'lesson', 'lesson__module', 'lesson__module__course'
+            ).order_by("-last_accessed")[:10]
+
+            recent_progress = []
+            for activity in recent_activities:
+                recent_progress.append({
+                    'lesson_id': activity.lesson.id,
+                    'lesson_title': activity.lesson.title,
+                    'module_title': activity.lesson.module.title,
+                    'course_title': activity.lesson.module.course.title,
+                    'is_completed': activity.is_completed,
+                    'last_accessed': activity.last_accessed
+                })
+                return Response({
+                    "courses_progress": course_progress,
+                    "recent_progress": recent_progress
+                })
+
+
+
+
+
+
+
+
+
+
+
 
 class ResumeCourseStudentAPIView(APIView):
     permission_classes = [IsAuthenticated]
