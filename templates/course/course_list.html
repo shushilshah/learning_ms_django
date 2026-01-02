@@ -33,19 +33,13 @@
                         <!-- Action Buttons -->
                         <div class="mt-auto">
 
-                            <a href="{% url 'teacher_course_detail' course.id %}"
-                               class="btn btn-outline-primary w-100 mb-2">
-                                View Course
-                            </a>
-
                             {% if user.is_authenticated %}
                                 {% if user.userprofile.role == 'teacher' %}
-                                    {% comment %} <a href="{% url 'module_detail' course.id %}"
-                                       class="btn btn-dark w-100">
-                                        Manage Modules
-                                    </a> {% endcomment %}
+                                    <a href="{% url 'teacher_course_detail' course.id %}" class="btn btn-outline-primary w-100 mb-2">
+                                View Course
+                            </a>
                                 {% else %}
-                                    {% if course.id in enrolled_courses %}
+                                    {% if course.id in enrolled_course_ids %}
                                         <button class="btn btn-success w-100" disabled>
                                             ✔ Enrolled
                                         </button>

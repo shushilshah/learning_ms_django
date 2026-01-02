@@ -252,7 +252,10 @@
             Start Module →
           </a>
           {% if user.is_authenticated and user.userprofile.role == "student" %}
-        <a href="{% url 'resume_course' course.id %}" class="resume-btn">Resume Course</a>
+          {% if has_started %}
+               <a href="{% url 'resume_course' course.id %}" class="resume-btn">Resume Course</a>
+          
+          {% endif %}
         {% endif %}
         </div>
         

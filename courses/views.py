@@ -379,11 +379,16 @@ def course_detail(request, course_id):
     progress_percentage = (
         completed__lessons/total_lessons * 100) if total_lessons > 0 else 0
 
+    has_started = LessonProgress.objects.filter(
+        user=request.user, lesson__module__course = course
+    ).exists() if request.user.is_authenticated else False
+
     context = {
         'course': course,
         'modules': modules,
         'progress_percentage': progress_percentage,
         'enrollment': enrollment,
+        'has_started': has_started
     }
     return render(request, 'course/course_detail.html', context)
 
@@ -403,12 +408,17 @@ def module_detail(request, module_id):
         user=request.user, course=course, is_active=True
     ).first()
 
+    # has_started = LessonProgress.objects.filter(
+    #     user=request.user, lesson__module__course = course
+    # ).exists() if request.user.is_authenticated else False
+
     context = {
         'module': module,
         'modules': modules,
         'course': course,
         'lessons': lessons,
-        'enrollment': enrollment
+        'enrollment': enrollment,
+        # 'has_started': has_started
     }
 
     return render(request, 'course/module_detail.html', context)
