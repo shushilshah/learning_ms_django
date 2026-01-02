@@ -434,15 +434,6 @@ class StudentLearningDashboardAPIView(APIView):
 
 
 
-
-
-
-
-
-
-
-
-
 class ResumeCourseStudentAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -518,4 +509,89 @@ class UpdateTimeSpentStudentAPIView(APIView):
             "status": "success",
             "lesson_id": lesson.id,
             "time_spent_minuts": progress.time_spent_minutes
+        }, status=200)
+
+
+
+class StudentStartQuizAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, slug):
+        quiz = get_object_or_404(Quiz, slug=slug, is_published=True)
+        module = quiz.module
+
+        
+        module_progress = ModuleProgress.objects.filter(
+            user=request.user,
+            module=module,
+            is_completed=True
+        ).exists()
+
+        if not module_progress:
+            return Response({
+                "detail": "You must complete this moduel before taking quiz."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # prevent multilple active attempts
+
+        attempt, created = QuizAttempt.objects.get_or_create(
+            user=request.user,
+            quiz=quiz,
+            completed_at__isnull=True
+        )
+
+        return Response({
+            "quiz_id": quiz.id,
+            "quiz_slug": quiz.slug,
+            "attempt_id": attempt.id,
+            "message": "Quiz attempt started" if created else "Resuming active attempt" 
+        }, status=status.HTTP_200_OK)
+
+
+
+class StudentTakeQuizAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, slug):
+        quiz = get_object_or_404(Quiz, slug=slug, is_published=True)
+
+        # get active attempt
+        attempt = QuizAttempt.objects.filter(
+            user=request.user,
+            quiz=quiz,
+            completed_at__isnull=True
+        ).first()
+
+        if not attempt:
+            return Response({
+                "detail": "No active attempt found for this quiz."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        
+        # fetch quizzes
+        questions = quiz.questions.prefetch_related('options').all()
+
+        question_data = []
+        for question in questions:
+            question_data.append({
+                'id': question.id,
+                'text': question.question_text,
+                'type': question.question_type,
+                'points': question.points,
+                'choices': [
+                    {
+                        'id': choice.id,
+                        'text': choice.choice_text
+                    }
+                    for choice in question.options.all()
+                ]
+            })
+
+        return Response({
+            'quiz_id': quiz.id,
+            'quiz_title': quiz.title,
+            'attempt_id': attempt.id,
+            'duration_seconds': quiz.time_limit_minutes * 60 if quiz.time_limit_minutes else None,
+            'started_at': attempt.started_at.timestamp(),
+            'questions': question_data
         }, status=200)
