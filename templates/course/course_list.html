@@ -40,10 +40,10 @@
 
                             {% if user.is_authenticated %}
                                 {% if user.userprofile.role == 'teacher' %}
-                                    <a href="{% url 'module_detail' course.id %}"
+                                    {% comment %} <a href="{% url 'module_detail' course.id %}"
                                        class="btn btn-dark w-100">
                                         Manage Modules
-                                    </a>
+                                    </a> {% endcomment %}
                                 {% else %}
                                     {% if course.id in enrolled_courses %}
                                         <button class="btn btn-success w-100" disabled>
