@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
     path('signup/', SignupAPIView.as_view(), name='api_signup'),
     path("login/", LoginAPIView.as_view(), name="api_login"),
+    path("logout/", LogoutAPIView.as_view(), name="api_logout"),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('courses/', CourseListAPIView.as_view(), name="api_course_list"),
@@ -19,6 +20,7 @@ urlpatterns = [
     path('teacher/courses/<int:course_id>/modules/create/', CreateModuleTeacherAPIView.as_view(), name="api_create_module_teacher"),
     path('teacher/courses/detail/', TeacherCourseDetailAPIView.as_view(), name="api_course_detail_teacher"),
     path('teacher/lessons/create/', CreateLessonTeacherAPIView.as_view(), name="api_crate_lesson_teacher"),
+    path('student/dashboard/', StudentLearningDashboardAPIView.as_view(), name='api_student_dashboard'),
     path('student/courses/<int:course_id>/resume/', ResumeCourseStudentAPIView.as_view(), name="api_resume_course_student"),
     path('student/lessons/<int:course_id>/complete/', MarkLessonCompleteAPIView.as_view(), name="api_mark_lesson_complete_student"),
     path('student/lessons/<int:lesson_id>/time-spent/', UpdateTimeSpentStudentAPIView.as_view(), name="api_update_time_spent")
