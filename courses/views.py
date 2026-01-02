@@ -309,7 +309,9 @@ def create_lesson(request, module_id):
 
 
 def course_list(request):
-    courses = Course.objects.filter(is_published=True)
+    search = request.GET.get("q", "")
+    courses = Course.objects.filter(is_published=True, title__icontains=search)
+    
 
     # Check if user is authenticated before querying enrollments
     if request.user.is_authenticated:
@@ -332,6 +334,7 @@ def course_list(request):
         context = {
             'courses': courses,
             'enrolled_course_ids': [],
+            'search': search
         }
 
     return render(request, 'course/course_list.html', context)

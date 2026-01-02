@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 
+
+<form>
+  <input type='text' name='q' value="{{search}}" class="form-control form-control-lg rounded-pill px-4" placeholder="Search Courses....">
+</form>
+
 <div class="container py-5">
 
     <!-- Page Header -->
@@ -22,7 +27,7 @@
                         </h5>
 
                         <p class="text-muted small mb-4">
-                            Learn at your own pace with structured modules and quizzes.
+                            {{course.description}}
                         </p>
 
                         <!-- Action Buttons -->
