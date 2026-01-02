@@ -670,20 +670,6 @@ def start_quiz(request, slug):
     return redirect('take_quiz', slug=quiz.slug)
 
 
-# @login_required
-# @role_required(['student'])
-# def take_quiz(request, slug):
-#     attempt = get_object_or_404(QuizAttempt, slug=slug, user=request.user)
-
-#     questions = attempt.quiz.questions.prefetch_related("options")
-#     return render(request, "quizzes/take_quiz.html", {
-#         "attempt": attempt,
-#         "questions": questions,
-#         "duration_seconds": attempt.quiz.duration_minutes * 60,
-#         "started_at": attempt.started_at.timestamp,
-#     })
-
-
 @login_required
 @role_required(['student'])
 def take_quiz(request, slug):
