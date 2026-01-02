@@ -7,7 +7,7 @@
   </head>
   <body>
     <h2>Create Lesson</h2>
-    <p>Course: <b>{{course.title}}</b> Lesson: <b>{{module.title}}</b></p>
+    <p>Course: <b>{{course.title}}</b> Module: <b>{{module.title}}</b></p>
 
     <form method="POST">
       {% csrf_token %} {{form.as_p}}

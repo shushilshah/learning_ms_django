@@ -1,43 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Course Detail - Teacher</title>
-  </head>
-  <body>
-    <h2>{{course.title}}</h2>
-    <a href="{% url 'create_module' course.id %}"> Add Module</a>
+{% extends "base.html" %}
+{% block content %}
 
-    <hr />
+<div class="container py-5">
 
-    {% for module in modules %}
-    <h4>
-      {{module.order}}. {{module.title}}
-      <a href="{% url 'create_lesson' module.id}">Add Lesson</a>
-    </h4>
+    <!-- Course Header -->
+    <div class="mb-4">
+        <h3 class="fw-bold">📘 {{ course.title }}</h3>
+        <p class="text-muted mb-2">
+            Manage modules and lessons for this course
+        </p>
 
-    <ul>
-      {% for lesson in module.lessons.all %}
-      <li>
-        {{ lesson.order }}. {{ lesson.title }} {% if lesson.is_published%}
-        (Published) {% else %} (Draft) {% endif %}
-      </li>
-      {% empty %}
-      <li>No lessons yet</li>
-      {% endfor %}
-    </ul>
-    {% endfor %}
+        <!-- Primary CTA -->
+        <a href="{% url 'create_module' course.id %}"
+           class="btn btn-outline-primary rounded-pill px-4">
+            ➕ Add New Module
+        </a>
+    </div>
 
-    <ul>
-      {% for module in modules %}
-      <li>
-        {{module.order}}. {{module.title}} {% if module.is_published %}
-        (Published) {% else %} (Draft) {% endif %}
-      </li>
-      {% empty %}
-      <li>No modules yet</li>
-      {% endfor %}
-    </ul>
-  </body>
-</html>
+    <hr class="my-4">
+
+    <!-- Modules & Lessons -->
+    {% if modules %}
+        {% for module in modules %}
+        <div class="card mb-4 shadow-sm border-0 rounded-4">
+
+            <div class="card-body">
+
+                <!-- Module Header -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-semibold mb-1">
+                            📦 {{ module.order }}. {{ module.title }}
+                        </h5>
+                        {% if module.is_published %}
+                            <span class="badge bg-success">Published</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Draft</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Create Lesson CTA -->
+                    <a href="{% url 'create_lesson' module.id %}"
+                       class="btn btn-sm btn-primary rounded-pill">
+                        ➕ Add Lesson
+                    </a>
+                </div>
+
+                <!-- Lessons List -->
+                {% if module.lessons.all %}
+                <ul class="list-group list-group-flush">
+                    {% for lesson in module.lessons.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <strong>{{ lesson.order }}. {{ lesson.title }}</strong>
+                            <br>
+                            {% if lesson.is_published %}
+                                <span class="badge bg-success">Published</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Draft</span>
+                            {% endif %}
+                        </div>
+
+                       
+
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                    <div class="alert alert-info mt-3">
+                        No lessons yet. Click <strong>Add Lesson</strong> to start.
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-warning">
+            No modules yet. Start by creating your first module 👆
+        </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="mt-4">
+        <a href="{% url 'teacher_dashboard' %}"
+           class="btn btn-outline-secondary">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}
