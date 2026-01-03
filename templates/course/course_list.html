@@ -37,12 +37,12 @@
                                 {% if user.userprofile.role == 'teacher' %}
                                 {% if course.teacher == user %}
                                 <!--------- Owner of the course -->
-                                    <a href="{% url 'teacher_course_detail' course.id %}" class="btn btn-outline-primary w-100 mb-2">
+                                    <a href="{% url 'teacher_course_detail' course.slug %}" class="btn btn-outline-primary w-100 mb-2">
                                 Manage Course
                             </a>
                             {% else %}
                             <!--------- Other teachers can read only -------->
-                            <a href="{% url 'teacher_course_preview' course.id %}" class="btn btn-outline-secondary w-100 mb-2">View Course</a>
+                            <a href="{% url 'teacher_course_preview' course.slug %}" class="btn btn-outline-secondary w-100 mb-2">View Course</a>
                             {% comment %} <span class='badge bg-secondary w-100 text-center'>Not Your Course</span> {% endcomment %}
                             {% endif %}
                                 {% else %}

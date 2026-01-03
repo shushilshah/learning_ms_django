@@ -266,8 +266,8 @@ def create_module(request, course_id):
 
 @login_required
 @role_required(['teacher'])
-def teacher_course_detail(request, course_id):
-    course = get_object_or_404(Course, id=course_id, teacher=request.user)
+def teacher_course_detail(request, slug):
+    course = get_object_or_404(Course, slug=slug, teacher=request.user)
 
     if course.teacher != request.user:
         return HttpResponseForbidden("You are not allowed to view this course.")
@@ -284,8 +284,8 @@ def teacher_course_detail(request, course_id):
 
 @login_required
 @role_required(['teacher'])
-def teacher_course_preview(request, course_id):
-    course = get_object_or_404(Course, id=course_id, is_published=True)
+def teacher_course_preview(request, slug):
+    course = get_object_or_404(Course, slug=slug, is_published=True)
 
     modules = course.modules.filter(is_published=True).prefetch_related('lessons')
 
@@ -296,7 +296,7 @@ def teacher_course_preview(request, course_id):
     }
     return render(request, 'teacher/course_preview.html', context)
 
-    
+
 
 
 

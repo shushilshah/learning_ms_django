@@ -21,6 +21,7 @@ class UserProfile(models.Model):
 
 class Course(models.Model):
     title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
     teacher = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='courses_taught')
@@ -30,6 +31,11 @@ class Course(models.Model):
         'self', symmetrical=False, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
