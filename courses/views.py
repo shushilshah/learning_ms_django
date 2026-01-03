@@ -81,7 +81,7 @@ def role_redirect(request):
     elif role == 'teacher':
         return redirect('teacher_dashboard')
     else:
-        return redirect('student_dashboard')
+        return redirect('learning_dashboard')
 
 
 @login_required
@@ -408,6 +408,7 @@ def module_detail(request, module_id):
         user=request.user, course=course, is_active=True
     ).first()
 
+
     # has_started = LessonProgress.objects.filter(
     #     user=request.user, lesson__module__course = course
     # ).exists() if request.user.is_authenticated else False
@@ -418,7 +419,6 @@ def module_detail(request, module_id):
         'course': course,
         'lessons': lessons,
         'enrollment': enrollment,
-        # 'has_started': has_started
     }
 
     return render(request, 'course/module_detail.html', context)
@@ -592,6 +592,42 @@ def enroll_course(request, course_id):
     return redirect('course_detail', course_id=course_id)
 
 
+# @login_required
+# @role_required(['student'])
+# def learning_dashboard(request):
+#     user = request.user
+
+#     user_enrollments = Enrollment.objects.filter(
+#         user=request.user, is_active=True).select_related('course')
+
+#     course_progress = []
+#     for enrollment in user_enrollments:
+#         course = enrollment.course
+#         total_lessons = Lesson.objects.filter(
+#             module__course=course, is_published=True).count()
+#         completed_lessons = LessonProgress.objects.filter(
+#             user=request.user, lesson__module__course=course, is_completed=True).count()
+#         progress_percentage = (
+#             completed_lessons/total_lessons * 100) if total_lessons > 0 else 0
+
+#         course_progress.append({
+#             'course': course,
+#             'progress_percentage': progress_percentage,
+#             'total_lessons': total_lessons,
+#             'completed_lessons': completed_lessons,
+#             'enrollment': enrollment,
+#         })
+
+#     # recent activity
+#     recent_activities = LessonProgress.objects.filter(user=request.user).select_related(
+#         'lesson', 'lesson__module', 'lesson__module__course').order_by('-last_accessed')[:10]
+
+#     context = {
+#         'courses_progress': course_progress,
+#         'recent_progress': recent_activities,
+#     }
+#     return render(request, 'dashboard.html', context)
+
 @login_required
 @role_required(['student'])
 def learning_dashboard(request):
@@ -608,7 +644,33 @@ def learning_dashboard(request):
         completed_lessons = LessonProgress.objects.filter(
             user=request.user, lesson__module__course=course, is_completed=True).count()
         progress_percentage = (
-            completed_lessons/total_lessons * 100) if total_lessons > 0 else 0
+            completed_lessons / total_lessons * 100) if total_lessons > 0 else 0
+
+        # 🔹 Build module-level progress
+        modules_data = []
+        modules = Module.objects.filter(course=course)
+        for module in modules:
+            module_total = Lesson.objects.filter(
+                module=module, is_published=True).count()
+            module_completed = LessonProgress.objects.filter(
+                user=request.user, lesson__module=module, is_completed=True).count()
+
+            # Example: attach quizzes if you have them
+            quizzes = Quiz.objects.filter(module=module)
+            quizzes_data = []
+            for quiz in quizzes:
+                quizzes_data.append({
+                    "title": quiz.title,
+                    "slug": quiz.slug,
+                    "can_start": module_completed == module_total and module_total > 0
+                })
+
+            modules_data.append({
+                "module": module,
+                "total_lessons": module_total,
+                "completed_lessons": module_completed,
+                "quizzes": quizzes_data,
+            })
 
         course_progress.append({
             'course': course,
@@ -616,6 +678,7 @@ def learning_dashboard(request):
             'total_lessons': total_lessons,
             'completed_lessons': completed_lessons,
             'enrollment': enrollment,
+            'modules': modules_data,   # 🔹 Now template has real data
         })
 
     # recent activity
@@ -626,7 +689,9 @@ def learning_dashboard(request):
         'courses_progress': course_progress,
         'recent_progress': recent_activities,
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'student/dashboard.html', context)
+
+
 
 
 
