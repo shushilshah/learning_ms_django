@@ -40,9 +40,7 @@
                             </a>
                                 {% else %}
                                     {% if course.id in enrolled_course_ids %}
-                                        <button class="btn btn-success w-100" disabled>
-                                            ✔ Enrolled
-                                        </button>
+                                        <a href="{% url 'course_detail' course.id %}" class="btn btn-success w-100">Continue Learning</a>
                                     {% else %}
                                         <form action="{% url 'enroll_course' course.id %}" method="POST">
                                             {% csrf_token %}
