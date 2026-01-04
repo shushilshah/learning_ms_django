@@ -21,7 +21,7 @@ class UserProfile(models.Model):
 
 class Course(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(blank=True)
+    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
     teacher = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='courses_taught')
@@ -149,7 +149,7 @@ class Notes(models.Model):
 
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField( blank=True)
+    slug = models.SlugField(unique=True, blank=True)
     duration_minutes = models.PositiveIntegerField(default=10, help_text="Quiz duration in minutes")
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name='quizzes', null=True, blank=True)
