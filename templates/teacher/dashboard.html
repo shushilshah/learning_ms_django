@@ -38,10 +38,17 @@
                                 ➕ Create Module
                             </a>
 
-                            <a href="{% url 'create_lesson' course.id %}"
-                               class="btn btn-outline-secondary btn-sm">
-                                ➕ Create Lesson
-                            </a>
+                            {% if course.modules.all %}
+    {% with first_module=course.modules.first %}
+        <a href="{% url 'create_lesson' first_module.id %}" class="btn btn-outline-secondary btn-sm">
+            ➕ Create Lesson
+        </a>
+    {% endwith %}
+{% else %}
+    <a href="#" class="btn btn-outline-secondary btn-sm disabled">
+        ➕ Create Lesson
+    </a>
+{% endif %}
 
                             <a href="{% url 'create_quiz' course.id %}"
                                class="btn btn-outline-dark btn-sm">
