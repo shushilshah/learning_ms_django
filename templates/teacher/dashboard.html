@@ -38,7 +38,7 @@
                                 ➕ Create Module
                             </a>
 
-                            <a href="{% url 'create_lesson' course.id %}"
+                            <a href="{% url 'create_lesson' course.slug %}"
                                class="btn btn-outline-secondary btn-sm">
                                 ➕ Create Lesson
                             </a>
@@ -48,7 +48,7 @@
                                 📝 Create Quiz
                             </a>
 
-                            <a href="{% url 'edit_course' course.slug %}"
+                            <a href="{% url 'edit_course' course.id %}"
                                class="btn btn-warning btn-sm">
                                 ✏️ Edit Course
                             </a>
