@@ -252,7 +252,7 @@ def create_module(request, slug):
             module = form.save(commit=False)
             module.course = course
             module.save()
-            return redirect('teacher_course_detail', slug=slug)
+            return redirect('teacher_course_detail', slug=course.slug)
     else:
         form = ModuleForm()
 
