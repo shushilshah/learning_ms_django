@@ -236,8 +236,8 @@ def edit_course(request, course_id):
 
 @login_required
 @role_required(['teacher'])
-def create_module(request, slug):
-    course = get_object_or_404(Course, slug=slug)
+def create_module(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
 
     if not course.is_published:
         raise PermissionDenied("Course not approved yet")
@@ -252,7 +252,7 @@ def create_module(request, slug):
             module = form.save(commit=False)
             module.course = course
             module.save()
-            return redirect('teacher_course_detail', slug=course.slug)
+            return redirect('teacher_course_detail', course_id=course.id)
     else:
         form = ModuleForm()
 
@@ -266,8 +266,8 @@ def create_module(request, slug):
 
 @login_required
 @role_required(['teacher'])
-def teacher_course_detail(request, slug):
-    course = get_object_or_404(Course, slug=slug, teacher=request.user)
+def teacher_course_detail(request, course_id):
+    course = get_object_or_404(Course, id=course_id, teacher=request.user)
 
     if course.teacher != request.user:
         return HttpResponseForbidden("You are not allowed to view this course.")
@@ -284,8 +284,8 @@ def teacher_course_detail(request, slug):
 
 @login_required
 @role_required(['teacher'])
-def teacher_course_preview(request, slug):
-    course = get_object_or_404(Course, slug=slug, is_published=True)
+def teacher_course_preview(request, course_id):
+    course = get_object_or_404(Course, id=course_id, is_published=True)
 
     modules = course.modules.filter(is_published=True).prefetch_related('lessons')
 
