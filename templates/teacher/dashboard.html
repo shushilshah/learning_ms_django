@@ -33,22 +33,22 @@
                         <!-- Action Buttons -->
                         <div class="mt-auto d-grid gap-2">
 
-                            <a href="{% url 'create_module' course.id %}"
+                            <a href="{% url 'create_module' course.slug %}"
                                class="btn btn-outline-primary btn-sm">
                                 ➕ Create Module
                             </a>
 
-                            <a href="{% url 'create_lesson' course.id %}"
+                            <a href="{% url 'create_lesson' course.slug %}"
                                class="btn btn-outline-secondary btn-sm">
                                 ➕ Create Lesson
                             </a>
 
-                            <a href="{% url 'create_quiz' course.id %}"
+                            <a href="{% url 'create_quiz' course.slug %}"
                                class="btn btn-outline-dark btn-sm">
                                 📝 Create Quiz
                             </a>
 
-                            <a href="{% url 'edit_course' course.id %}"
+                            <a href="{% url 'edit_course' course.slug %}"
                                class="btn btn-warning btn-sm">
                                 ✏️ Edit Course
                             </a>
