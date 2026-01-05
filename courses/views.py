@@ -236,8 +236,8 @@ def edit_course(request, course_id):
 
 @login_required
 @role_required(['teacher'])
-def create_module(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
+def create_module(request, slug):
+    course = get_object_or_404(Course, slug=slug)
 
     if not course.is_published:
         raise PermissionDenied("Course not approved yet")
@@ -252,7 +252,7 @@ def create_module(request, course_id):
             module = form.save(commit=False)
             module.course = course
             module.save()
-            return redirect('teacher_course_detail', course_id=course.id)
+            return redirect('teacher_course_detail', slug=slug)
     else:
         form = ModuleForm()
 
