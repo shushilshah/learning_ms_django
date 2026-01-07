@@ -55,7 +55,7 @@ class QuestionForm(forms.ModelForm):
 class AnswerOptionForm(forms.ModelForm):
     class Meta:
         model = AnswerOption
-        fields = ['question', 'choice_text', 'is_correct', 'order']
+        fields = ['question', 'choice_text', 'order']
 
 
 
