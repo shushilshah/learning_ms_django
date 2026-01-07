@@ -5,3 +5,4 @@ staticfiles
 media
 lessons_doc
 api_view_writing_phases.txt
+.env
