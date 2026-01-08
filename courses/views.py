@@ -1025,7 +1025,8 @@ def add_question(request, quiz_id):
                     option = AnswerOption.objects.create(
                         question=question,
                         choice_text=q_data.get(f"option{i}"),
-                        order=i
+                        order=i,
+                        is_correct = False
                     )
                     options.append(option)
 
@@ -1058,7 +1059,7 @@ def add_question(request, quiz_id):
             quiz.is_published = True
             quiz.save()
             messages.success(request, "Quiz published successfully!")
-            return redirect("add_question", quiz_id=quiz_id)
+            return redirect("teacher_dashboard")
 
         messages.success(request, "Questions added successfully!")
         # return redirect("add_question", quiz_id=quiz.id)

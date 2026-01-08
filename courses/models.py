@@ -188,6 +188,9 @@ class Question(models.Model):
 
     def __str__(self):
         return f"{self.quiz.title} - {self.order}"
+    
+    def correct_option(self):
+        return self.options.filter(is_correct=True).first()
 
 
 
@@ -245,6 +248,6 @@ class QuestionResponse(models.Model):
         # self.is_correct = self.selected_option_id == correct_option.id
         correct_option = self.question.options.get(is_correct=True)
         self.is_correct = self.selected_option_id == correct_option.id
-        
+
         self.save()
        
