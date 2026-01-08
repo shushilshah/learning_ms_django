@@ -21,7 +21,7 @@ class UserProfile(models.Model):
 
 class Course(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True)
+    # slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
     teacher = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='courses_taught')
@@ -32,10 +32,10 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.slug:
+    #         self.slug = slugify(self.title)
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -149,7 +149,7 @@ class Notes(models.Model):
 
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True)
+    # slug = models.SlugField(unique=True, blank=True)
     duration_minutes = models.PositiveIntegerField(default=10, help_text="Quiz duration in minutes")
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name='quizzes', null=True, blank=True)
@@ -161,10 +161,10 @@ class Quiz(models.Model):
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.slug:
+    #         self.slug = slugify(self.title)
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -194,24 +194,24 @@ class Question(models.Model):
 
 
 
-class CorrectAnswer(models.Model):
-    question = models.OneToOneField('Question', on_delete=models.CASCADE, related_name='correct_answer')
-    answer_option = models.ForeignKey('AnswerOption', on_delete=models.CASCADE, related_name='is_correct_for')
-    explanation = models.TextField(blank=True, null=True, help_text="Explanation shown after quiz submission")
+# class CorrectAnswer(models.Model):
+#     question = models.OneToOneField('Question', on_delete=models.CASCADE, related_name='correct_answer')
+#     answer_option = models.ForeignKey('AnswerOption', on_delete=models.CASCADE, related_name='is_correct_for')
+#     explanation = models.TextField(blank=True, null=True, help_text="Explanation shown after quiz submission")
 
-    class Meta:
-        verbose_name = "Correct Answer"
-        verbose_name_plural = "Correct Answers"
+#     class Meta:
+#         verbose_name = "Correct Answer"
+#         verbose_name_plural = "Correct Answers"
 
-    def __str__(self):
-        return f"Correct answer for: {self.question.question_text[:50]}"
+#     def __str__(self):
+#         return f"Correct answer for: {self.question.question_text[:50]}"
     
 
 
 class AnswerOption(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     choice_text = models.CharField(max_length=255)
-    # is_correct = models.BooleanField(default=False)
+    is_correct = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -241,17 +241,10 @@ class QuestionResponse(models.Model):
     is_correct = models.BooleanField(default=False)
 
     def evaluate_response(self):
-        correct_option = self.question.correct_answer.answer_option
+        # correct_option = self.question.correct_answer.answer_option
+        # self.is_correct = self.selected_option_id == correct_option.id
+        correct_option = self.question.options.get(is_correct=True)
         self.is_correct = self.selected_option_id == correct_option.id
+        
         self.save()
-        # if self.question.question_type =='true_false':
-        #     selected_choice = self.selected_choices.first()
-        #     if selected_choice:
-        #         self.is_correct = selected_choice.is_correct
-        # else:
-        #     correct_choices = set(self.question.choices.filter(
-        #         is_correct=True).values_list('id', flat=True))
-        #     selected_choices = set(
-        #         self.selected_choices.values_list('id', flat=True))
-        #     self.is_correct = correct_choices == selected_choices
-        # self.save()
+       

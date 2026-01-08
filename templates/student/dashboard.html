@@ -50,7 +50,7 @@
                                                     <div class="d-grid gap-2">
                                                         {% for quiz in module_data.quizzes %}
                                                             {% if quiz.can_start %}
-                                                                <a href="{% url 'start_quiz' quiz.slug %}" class="btn btn-gradient-primary fw-bold">
+                                                                <a href="{% url 'start_quiz' quiz.id %}" class="btn btn-gradient-primary fw-bold">
                                                                     ▶ {{ quiz.title }}
                                                                 </a>
                                                             {% else %}

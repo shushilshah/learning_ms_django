@@ -18,10 +18,10 @@ class AnswerOptionInline(admin.TabularInline):
     model = AnswerOption
     extra = 4
 
-class CorrectAnswerInline(admin.StackedInline):
-    model = CorrectAnswer
-    max_num = 1
-    min_num = 1
+# class CorrectAnswerInline(admin.StackedInline):
+#     model = CorrectAnswer
+#     max_num = 1
+#     min_num = 1
 
 class QuestionInline(admin.StackedInline):
     model = Question
@@ -76,7 +76,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ['question_text', 'quiz', 'question_type', 'points', 'order']
     list_filter = ['quiz', 'question_type']
     ordering = ['quiz', 'order']
-    inlines = [AnswerOptionInline, CorrectAnswerInline]
+    inlines = [AnswerOptionInline]
 
 
 @admin.register(ModuleProgress)
@@ -98,3 +98,4 @@ class QuizAttemptAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Notes)
+admin.site.register(AnswerOption)

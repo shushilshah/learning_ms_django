@@ -11,6 +11,8 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from rest_framework import status
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 
 def signup_view(request):
     if request.method == 'POST':
@@ -34,17 +36,31 @@ def logout_user(request):
 
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get('username').strip()
+        password = request.POST.get('password').strip()
+
+        if not username or not password:
+            return render(request, "auth/login.html", {"error": "Both username and password required."})
+
+        if len(password) < 8:
+            return render(request, "auth/login.html", {"error": "Password must be at least 8 characters."})
+        
+        if not User.objects.filter(username=username).exists():
+            return render(request, 'auth/login.html', {"error": "Entered username does not exists."})
+
+        if not User.objects.filter(username=username).exists():
+            return render(request, "auth/login.html", {"error": "Username is case sensitive. Please enter the correct username."})
+        
+
 
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
+        if user is not None:    
             login(request, user)
             return redirect('role_redirect')
         else:
             return render(request, 'auth/login.html', {
-                'error': 'Invalid Credentials'
+                'error': 'Wrong password. Please try again.'
             })
     return render(request, 'auth/login.html')
 
@@ -676,7 +692,7 @@ def learning_dashboard(request):
             module_total = Lesson.objects.filter(
                 module=module, is_published=True).count()
             module_completed = LessonProgress.objects.filter(
-                user=request.user, lesson__module=module, is_completed=True).count()
+                user=request.user, lesson__module=module, lesson__is_published=True, is_completed=True).count()
 
             # Example: attach quizzes if you have them
             quizzes = Quiz.objects.filter(module=module)
@@ -684,7 +700,7 @@ def learning_dashboard(request):
             for quiz in quizzes:
                 quizzes_data.append({
                     "title": quiz.title,
-                    "slug": quiz.slug,
+                    "id": quiz.id,
                     "can_start": module_completed == module_total and module_total > 0
                 })
 
@@ -743,8 +759,8 @@ def approve_course(request, course_id):
 
 @login_required
 @role_required(['student'])
-def start_quiz(request, slug):
-    quiz = get_object_or_404(Quiz, slug=slug, is_published=True)
+def start_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id, is_published=True)
 
     # check module complete or not
     module = quiz.module
@@ -765,13 +781,13 @@ def start_quiz(request, slug):
         quiz=quiz,
         completed_at__isnull = True
     )
-    return redirect('take_quiz', slug=quiz.slug)
+    return redirect('take_quiz', quiz_id=quiz_id)
 
 
 @login_required
 @role_required(['student'])
-def take_quiz(request, slug):
-    quiz = get_object_or_404(Quiz, slug=slug, is_published=True)
+def take_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id, is_published=True)
 
     # Get the active attempt for this user and quiz
     attempt = QuizAttempt.objects.filter(
@@ -925,8 +941,6 @@ def create_quiz(request, course_id):
 
     modules = courses.modules.all()
    
-    
-
     if request.method == "POST":
         module_id = request.POST.get("module")
         title = request.POST.get("title", "").strip()
@@ -977,61 +991,6 @@ def create_quiz(request, course_id):
     })
 
 
-
-# @login_required
-# @role_required(['teacher'])
-# def add_question(request, quiz_id):
-#     quiz = get_object_or_404(Quiz, id=quiz_id)
-
-#     if request.method == "POST":
-#         # Check if multiple questions exist in POST
-#         questions_data = request.POST.getlist('questions')  # we will parse manually
-#         # Since we used nested input names, it's better to loop over keys
-#         questions_dict = {}
-#         for key, value in request.POST.items():
-#             # key example: questions[1][question], questions[1][option1], questions[1][correct]
-#             if key.startswith("questions"):
-#                 # Extract indices
-#                 parts = key.replace("questions[", "").replace("]", "").split("[")
-#                 q_index = parts[0]
-#                 field = parts[1]
-
-#                 if q_index not in questions_dict:
-#                     questions_dict[q_index] = {}
-#                 questions_dict[q_index][field] = value
-
-#         # Save all questions
-#         for q_index, q_data in questions_dict.items():
-#             question_text = q_data.get("question")
-#             correct_option = q_data.get("correct")
-#             options = {
-#                 "option1": q_data.get("option1"),
-#                 "option2": q_data.get("option2"),
-#                 "option3": q_data.get("option3"),
-#                 "option4": q_data.get("option4"),
-#             }
-
-#             Question.objects.create(
-#                 quiz=quiz,
-#                 question_text=question_text,
-#                 option1=options["option1"],
-#                 option2=options["option2"],
-#                 option3=options["option3"],
-#                 option4=options["option4"],
-#                 correct_answer=correct_option
-#             )
-
-#         # Check if user clicked Publish Quiz
-#         if "publish" in request.POST:
-#             quiz.is_published = True
-#             quiz.save()
-#             messages.success(request, "Quiz published successfully!")
-#             return redirect("quiz_detail", quiz_id=quiz.id)
-#         else:
-#             messages.success(request, "Questions added successfully! You can add more.")
-#             return redirect("add_questions", quiz_id=quiz.id)
-
-#     return render(request, "quizzes/teacher_add_question.html", {"quiz": quiz})
 
 
 @login_required
@@ -1090,18 +1049,19 @@ def add_question(request, quiz_id):
                 correct_option.save()
 
 
-                CorrectAnswer.objects.create(
-                    question=question,
-                    answer_option=correct_option
-                )
+                # CorrectAnswer.objects.create(
+                #     question=question,
+                #     answer_option=correct_option
+                # )
 
         if "publish" in request.POST:
             quiz.is_published = True
             quiz.save()
             messages.success(request, "Quiz published successfully!")
-            return redirect("add_question", quiz_id=quiz.id)
+            return redirect("add_question", quiz_id=quiz_id)
 
         messages.success(request, "Questions added successfully!")
-        return redirect("add_question", quiz_id=quiz.id)
+        # return redirect("add_question", quiz_id=quiz.id)
+        return redirect("Thank you")
 
     return render(request, "quizzes/teacher_add_question.html", {"quiz": quiz})
