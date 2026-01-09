@@ -38,11 +38,12 @@ def login_user(request):
     if request.method == 'POST':
         username = request.POST.get('username').strip()
         password = request.POST.get('password').strip()
+        selected_role = request.POST['role']
 
         if not username or not password:
             return render(request, "auth/login.html", {"error": "Both username and password required."})
 
-        if len(password) < 8:
+        if username != 'admin' and len(password) < 8:
             return render(request, "auth/login.html", {"error": "Password must be at least 8 characters."})
         
         if not User.objects.filter(username=username).exists():
@@ -54,6 +55,10 @@ def login_user(request):
 
 
         user = authenticate(request, username=username, password=password)
+
+        if user.userprofile.role != selected_role:
+            return render(request, 'auth/login.html', {"error": f"You are not allowed to login as {selected_role.capitalize()}!"})
+
 
         if user is not None:    
             login(request, user)
@@ -88,30 +93,48 @@ def profile_view(request):
     return render(request, 'profile.html')
 
 
+# @login_required
+# def role_redirect(request):
+    # role = request.user.userprofile.role
+
+    # if role == 'admin':
+    #     return redirect('/admin/')
+    # elif role == 'teacher':
+    #     return redirect('teacher_dashboard')
+    # else:
+    #     return redirect('learning_dashboard')
+
 @login_required
 def role_redirect(request):
-    role = request.user.userprofile.role
+    user = request.user
 
-    if role == 'admin':
+    if user.is_superuser:
         return redirect('/admin/')
-    elif role == 'teacher':
-        return redirect('teacher_dashboard')
+
+    # If profile does not exist
+    profile = getattr(user, "userprofile", None)
+    if not profile:
+        return redirect("learning_dashboard")
+
+    role = profile.role
+
+    if role == "teacher":
+        return redirect("teacher_dashboard")
+
+    elif role == "student":
+        return redirect("learning_dashboard")
+
     else:
-        return redirect('learning_dashboard')
+        # fallback if some unknown role
+        return redirect("learning_dashboard")
+
+
 
 
 @login_required
 @role_required(['student'])
 def student_dashboard(request):
     user = request.user
-    # quizzes = Quiz.objects.filter(is_published=True)
-
-    # for quiz in quizzes:
-    #     quiz.can_start = ModuleProgress.objects.filter(
-    #         user=request.user,
-    #         module = quiz.module,
-    #         is_completed = True
-    #     ).exists()
 
     enrollments = Enrollment.objects.filter(
         user=user, is_active=True
