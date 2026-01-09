@@ -26,9 +26,11 @@
 
                         <h5 class="fw-bold mb-1">{{ course.title }}</h5>
                         <p class="text-muted small mb-3">
-                            👥 Students Enrolled:
-                            <strong>{{ item.total_students}}</strong>
-                        </p>
+    👥 Students Enrolled: <strong>{{ item.total_students }}</strong><br>
+    📦 Total Modules: <strong>{{ course.total_modules }}</strong><br>
+    📚 Total Lessons: <strong>{{ course.total_lessons }}</strong><br>
+    📝 Total Quizzes: <strong>{{ course.total_quizzes }}</strong>
+</p>
 
                         <!-- Action Buttons -->
                         <div class="mt-auto d-grid gap-2">

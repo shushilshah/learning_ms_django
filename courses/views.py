@@ -13,6 +13,7 @@ from django.db import transaction
 from rest_framework import status
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 
 def signup_view(request):
     if request.method == 'POST':
@@ -208,7 +209,12 @@ def student_dashboard(request):
 def teacher_dashboard(request):
     teacher = request.user
 
-    courses = Course.objects.filter(teacher=teacher, is_published=True)
+    courses = Course.objects.filter(teacher=teacher, is_published=True).annotate(
+        total_modules= Count('modules', distinct=True),
+        total_lessons = Count('modules__lessons', distinct=True),
+        total_quizzes = Count('modules__quizzes', distinct=True)
+    )
+
     approved_courses = Course.objects.filter(teacher=teacher, is_published=True)
     pending_courses = Course.objects.filter(teacher=teacher, is_published=False)
 
