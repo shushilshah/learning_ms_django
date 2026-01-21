@@ -1,0 +1,10 @@
+<form method="POST">
+    {% csrf_token %}
+    <label>Title:</label>
+    <input type="text" name="title" required><br><br>
+
+    <label>Message:</label>
+    <textarea name="message" required></textarea><br><br>
+
+    <button type="submit">Send to Students</button>
+</form>

@@ -2,7 +2,7 @@ from django import forms
 from courses.models import Course, Module, Lesson, Quiz, Question, AnswerOption
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-
+from notifications.models import Notification
 
 class CourseForm(forms.ModelForm):
     class Meta:
@@ -93,3 +93,19 @@ class EditCourseForm(forms.ModelForm):
         model = Course
         fields = ['title', 'description',
                   'price', 'is_published', 'prerequistes']
+
+
+class AdminNotificationForm(forms.ModelForm):
+    # RECEIVER_CHOICES = [
+    #     ("teacher", "Teacher"),
+    # ]
+
+    # receiver_group = forms.ChoiceField(
+    #     choices=RECEIVER_CHOICES,
+    #     label="Receiver",
+    #     required=True
+    # )
+
+    class Meta:
+        model = Notification
+        fields = ("title", "message")

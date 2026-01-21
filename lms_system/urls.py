@@ -38,6 +38,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include('courses.urls')),
+    path("notifications/", include('notifications.urls')),
     path('api/accounts/', include('accounts.urls')),
     # path('api/courses/', include('courses.urls')),
     path('swagger/', schema_view.with_ui('swagger',
