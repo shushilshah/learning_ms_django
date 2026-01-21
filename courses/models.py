@@ -236,6 +236,9 @@ class QuizAttempt(models.Model):
     is_passed = models.BooleanField(default=False)
 
 
+
+
+
 class QuestionResponse(models.Model):
     attempt = models.ForeignKey(
         QuizAttempt, on_delete=models.CASCADE, related_name='responses')

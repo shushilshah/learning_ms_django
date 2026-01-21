@@ -13,7 +13,7 @@ from django.db import transaction
 from rest_framework import status
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 
 def signup_view(request):
     if request.method == 'POST':
@@ -717,11 +717,15 @@ def learning_dashboard(request):
         # 🔹 Build module-level progress
         modules_data = []
         modules = Module.objects.filter(course=course)
+    
+
         for module in modules:
             module_total = Lesson.objects.filter(
                 module=module, is_published=True).count()
             module_completed = LessonProgress.objects.filter(
                 user=request.user, lesson__module=module, lesson__is_published=True, is_completed=True).count()
+
+           
 
             # Example: attach quizzes if you have them
             quizzes = Quiz.objects.filter(module=module)
@@ -810,6 +814,9 @@ def start_quiz(request, quiz_id):
         quiz=quiz,
         completed_at__isnull = True
     )
+
+    if attempt.completed:
+        return redirect("view_quiz", attempt.id)
     return redirect('take_quiz', quiz_id=quiz_id)
 
 
@@ -896,6 +903,20 @@ def submit_quiz(request, attempt_id):
     attempt.save()
 
     return redirect("quiz_result", attempt_id=attempt.id)
+
+
+@login_required
+def view_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    attempt = QuizAttempt.objects.get(student=request.user, quiz=quiz)
+
+    questions = quiz.questions.all()
+
+    return render(request, "quiz/view_quiz.html", {
+        "quiz": quiz,
+        "attempt": attempt,
+        "questions": questions,
+    })
 
 
 
