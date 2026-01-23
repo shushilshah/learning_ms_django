@@ -6,3 +6,6 @@ dj-database-url
 whitenoise
 djangorestframework-simplejwt
 drf-yasg
+channels
+channels-redis
+daphne

@@ -1,4 +1,4 @@
-<form method="POST">
+<form method="POST" action="{% url 'admin_publish_notice' %}">
     {% csrf_token %}
     <label>Title:</label>
     <input type="text" name="title" required><br><br>

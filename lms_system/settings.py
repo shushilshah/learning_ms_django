@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "daphne",
     "django.contrib.staticfiles",
     "courses",
     "rest_framework",
@@ -48,6 +49,8 @@ INSTALLED_APPS = [
     "accounts",
     "drf_yasg",
     "notifications",
+    "channels",
+    
 ]
 
 MIDDLEWARE = [
@@ -90,6 +93,20 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "lms_system.wsgi.application"
+ASGI_APPLICATION = "lms_system.asgi.application"
+
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+
 
 
 # Database

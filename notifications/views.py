@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from courses.decorators import role_required
 from courses.models import Enrollment
 from django.db.models import Max
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 User = get_user_model()
 
@@ -23,18 +25,41 @@ def notice_redirect(request):
 
 
 @login_required
-@role_required(['admin'])
+# @role_required(['admin'])
 def admin_publish_notice(request):
+    print("🔥 admin_publish_notice view called")
     if request.method == 'POST':
-        title = request.POST['title']
-        message = request.POST['message']
+        print("📨 POST request received")
+        title = request.POST.get('title', "").strip()
+        message = request.POST.get('message', "").strip()
 
-        teachers = User.objects.filter(role='teacher')
+        teachers = User.objects.filter(userprofile__role='teacher')
+        channel_layer = get_channel_layer()
 
         for teacher in teachers:
+            print("Sending to group:", f"user_{teacher.id}")
             Notification.objects.create(sender=request.user, receiver=teacher, title=title, message=message)
+            
+            async_to_sync(channel_layer.group_send)(
+                f"user_{teacher.id}",
+                {
+                    "type": "send_notification",
+                    "sender_role": "Admin",
+                    "title": title,
+                    "message": message,
+                }
+            )
+        
+        return redirect("admin_publish_notice")
+    return render(request, "notifications/admin_publish_notice.html")
 
-        return redirect("admin_notice_list")
+
+
+
+
+
+
+
 
 
 @login_required
@@ -102,3 +127,7 @@ def teacher_notice_list(request):
 def student_notifications(request):
     notifications = Notification.objects.filter(receiver=request.user).order_by("-created_at")
     return render(request, "notifications/student_notifications.html", {"notifications": notifications})
+
+
+
+
