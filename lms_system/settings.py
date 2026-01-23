@@ -95,7 +95,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "lms_system.wsgi.application"
 ASGI_APPLICATION = "lms_system.asgi.application"
 
-REDIS_URL = os.environ.get("redis: // red-d5popgfpm1nc73c63540: 6379")
+REDIS_URL = os.environ.get("REDIS_URL")
 
 
 CHANNEL_LAYERS = {
