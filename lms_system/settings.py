@@ -95,13 +95,15 @@ TEMPLATES = [
 WSGI_APPLICATION = "lms_system.wsgi.application"
 ASGI_APPLICATION = "lms_system.asgi.application"
 
+REDIS_URL = os.environ.get("redis: // red-d5popgfpm1nc73c63540: 6379", "redis://127.0.0.1:6379")
 
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [('127.0.0.1', 6379)],
+            # "hosts": [('127.0.0.1', 6379)],
+            'hosts': [REDIS_URL],
         },
     },
 }
