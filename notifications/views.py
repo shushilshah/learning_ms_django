@@ -54,14 +54,6 @@ def admin_publish_notice(request):
     return render(request, "notifications/admin_publish_notice.html")
 
 
-
-
-
-
-
-
-
-
 @login_required
 @role_required(['teacher'])
 def teacher_publish_notice(request):
@@ -70,9 +62,10 @@ def teacher_publish_notice(request):
         message = request.POST['message']
 
         enrollments = Enrollment.objects.filter(course__teacher=request.user)
-        # students = User.objects.filter(role="student", enrollments__teacher=request.user).distinct()
         students = User.objects.filter(
             id__in=enrollments.values_list('user_id', flat=True))
+        channel_layer = get_channel_layer()
+
 
         for student in students:
             Notification.objects.create(
@@ -80,6 +73,16 @@ def teacher_publish_notice(request):
                 receiver = student,
                 title=title,
                 message=message
+            )
+
+            async_to_sync(channel_layer.group_send)(
+                f"user_{student.id}",
+                {
+                    "type": "send_notification",
+                    "sender_role": "teacher",
+                    "title": title,
+                    "message": message,
+                }
             )
         return redirect("teacher_notice_list")
     return render(request, "notifications/teacher_publish.html")

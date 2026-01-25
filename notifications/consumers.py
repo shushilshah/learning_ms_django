@@ -18,9 +18,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         print("Websocket disconnected")
 
     async def send_notification(self, event):
-        # sender_role = event.get("sender_role", "Notification")
+        sender_role = event.get("sender_role", "Admin")
         await self.send(text_data=json.dumps({
-            "source": "Admin",
+            "source": sender_role.capitalize(),
             "title": event["title"],
             "message": event["message"]
         }))
