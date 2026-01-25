@@ -102,13 +102,14 @@ WSGI_APPLICATION = "lms_system.wsgi.application"
 ASGI_APPLICATION = "lms_system.asgi.application"
 
 REDIS_URL = os.environ.get("REDIS_URL")
-
+if not REDIS_URL:
+    raise ValueError("REDIS_URL environment variable is not set!")
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            'hosts': [REDIS_URL],
+            "hosts": [REDIS_URL],
         },
     },
 }
