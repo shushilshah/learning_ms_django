@@ -64,6 +64,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# for handling csrf failed error on deployment
+CSRF_TRUSTED_ORIGINS = [
+    "https://learning-ms-django.onrender.com",
+]
+
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
