@@ -13,7 +13,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.sender = request.user
-        obj.save()
+        # obj.save()
 
         # filter the role -default is teacher for sendinfg from admin to teacher
         teachers = User.objects.filter(userprofile__role="teacher")
