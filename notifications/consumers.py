@@ -1,5 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
+from .models import Notification
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -19,10 +20,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def send_notification(self, event):
         sender_role = event.get("sender_role", "Admin")
+        user_notifications = await database_sync_to_async(lambda: Notification.objects.filter(receiver=self.user, is_read=False).count())()
         await self.send(text_data=json.dumps({
             "source": sender_role.capitalize(),
             "title": event["title"],
-            "message": event["message"]
+            "message": event["message"],
+            "unread_count": user_notifications
         }))
 
 

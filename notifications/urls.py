@@ -9,5 +9,5 @@ urlpatterns = [
     path('teacher/list/', views.teacher_notice_list, name='teacher_notice_list'),
     path('student/list/', views.student_notifications, name="student_notifications"),
     path('notice-redirect/', views.notice_redirect, name="notice_redirect"),
-    
+
 ]

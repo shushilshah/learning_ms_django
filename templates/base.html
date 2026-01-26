@@ -157,10 +157,14 @@
         <h2>LMS Panel</h2>
         <a href="{% url 'role_redirect' %}">📊 Dashboard</a>
         <a href="{% url 'course_list' %}">📚 All Courses</a>
-        <a href="{% url 'notice_redirect' %}">✅ Notices</a>
         <a href="{% url 'notice_redirect' %}">
           <button type="button" class="btn btn-primary position-relative">Inbox
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">99+
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {% if unread_count > 99 %}
+            99+
+            {% else %}
+            {{unread_count}}
+            {% endif %}
             <span class="visually-hidden">unread messages</span>
           </span>
         </button>
@@ -180,7 +184,7 @@
     <!-- Toast Container -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
   <div id="notification-toast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header text-white bg-primary">
+      <div class="toast-header text-white bg-danger">
       <strong class="me-auto" id="toast-header">Source</strong>
       <small class="text-light" id="toast-time">just now</small>
       <button type="button" class="btn-close btn-close-white ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -213,6 +217,9 @@
         console.log("Websocket connected");
       };
       
+      const badge = document.querySelector(".sidebar .btn-primary .badge");
+
+
       socket.onmessage = function(e){
         const data = JSON.parse(e.data);
         console.log("New notification:", data);
@@ -221,6 +228,8 @@
          document.getElementById('toast-header').textContent = data.source || "Notification"; // e.g., "Admin" or "System"
          document.getElementById('toast-body').innerHTML = data.message;
          document.getElementById('toast-time').textContent = new Date().toLocaleTimeString();
+
+         badge.textContent = data.unread_count > 99 ? "99+" : data.unread_count;
 
           // Show toast
          toast.show();

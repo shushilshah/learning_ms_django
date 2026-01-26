@@ -7,6 +7,7 @@ from courses.models import Enrollment
 from django.db.models import Max
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.http import JsonResponse
 
 User = get_user_model()
 
@@ -132,5 +133,8 @@ def student_notifications(request):
     return render(request, "notifications/student_notifications.html", {"notifications": notifications})
 
 
+
+
+    
 
 

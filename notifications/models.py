@@ -7,6 +7,7 @@ User = settings.AUTH_USER_MODEL
 class Notification(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_notifications")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="receive_notifications")
+    # receiver_deleted = models.BooleanField(default=False) # soft delter for receiver for counting strategy
     title = models.CharField(max_length=255)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
