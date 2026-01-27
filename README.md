@@ -103,3 +103,12 @@ daphne -p 8001 lms_system.asgi:application
 
 2. Student Dashboard:
 ![alt text](image-1.png)
+
+3. All courses from teacher side:
+![alt text](image-2.png)
+
+4. Manage course from teacher side:
+![alt text](image-3.png)
+
+5. All courses from student side:
+![alt text](image-4.png)
