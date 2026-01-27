@@ -59,14 +59,47 @@ PostgreSQL / SQLite
 git clone https://github.com/shushilshah/learning_ms_django.git
 cd lms_system
 
----
-
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 
-
----
-
 # Install dependencies
 pip install -r requirements.txt
+
+# migrate database
+python manage.py makemigrations
+python manage.py migrate
+
+# create superuser
+python manage.py createsuperuser
+
+# run redis server
+redis-server
+
+# start development server
+python manage.py runserver
+
+or with ASGI + Daphne
+daphne -p 8001 lms_system.asgi:application
+
+# Create .env file
+## list down all the secret key for development
+
+```
+
+## 🔁 Real-Time Notification Flow
+
+1. Teacher/Admin publishes a notice
+
+2. Notice saved in database
+
+3. Django Channels sends WebSocket event
+
+4. Students receive instant notification
+
+# 📸 Screenshots
+1. Teacher Dashboard:
+![alt text](image.png)
+
+2. Student Dashboard:
+![alt text](image-1.png)
