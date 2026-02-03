@@ -87,7 +87,6 @@ class SignupForm(UserCreationForm):
             raise forms.ValidationError("Email already in use")
         return email
 
-
 class EditCourseForm(forms.ModelForm):
     class Meta:
         model = Course

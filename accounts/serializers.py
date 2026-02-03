@@ -3,6 +3,8 @@ from rest_framework import serializers
 from courses.models import UserProfile, Course, Enrollment, Lesson, Module, LessonProgress
 from django.contrib.auth import authenticate
 
+from notifications.models import Notification
+
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -96,3 +98,9 @@ class RecentActivitySerializer(serializers.ModelSerializer):
 class TeacherDashboardSerializer(serializers.Serializer):
     course_title = serializers.CharField()
     total_students = serializers.IntegerField()
+
+
+class NotificationSerializer(serializers.Serializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'sender', 'receiver', 'title', 'message', 'created_at', 'is_read']

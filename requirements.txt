@@ -9,3 +9,4 @@ drf-yasg
 channels
 channels-redis
 daphne
+django-widget-tweaks  ## added for form styling while signup

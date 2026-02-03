@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "notifications",
     "channels",
+    "widget_tweaks",
     
 ]
 
@@ -103,15 +104,15 @@ WSGI_APPLICATION = "lms_system.wsgi.application"
 ASGI_APPLICATION = "lms_system.asgi.application"
 
 REDIS_URL = os.environ.get("REDIS_URL")
-# if not REDIS_URL:
-#     raise ValueError("REDIS_URL environment variable is not set!")
+if not REDIS_URL:
+    raise ValueError("REDIS_URL environment variable is not set!")
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [('127.0.0.1', 6379)]
-            # "hosts": [REDIS_URL],
+            # "hosts": [('127.0.0.1', 6379)]
+            "hosts": [REDIS_URL],
         },
     },
 }
@@ -196,15 +197,6 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = '/login/'
 
-
-# For local development
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "your mailing account .com"
-EMAIL_HOST_PASSWORD = "*************"
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 
