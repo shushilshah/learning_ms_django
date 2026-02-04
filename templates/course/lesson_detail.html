@@ -3,137 +3,165 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{ lesson.title }} | {{ course.title }}</title>
+
+    <!-- Bootstrap 5 -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-      crossorigin="anonymous"
     />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+      body {
+        background-color: #f4f7fb;
+      }
+      .lesson-header {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: #fff;
+        border-radius: 12px;
+        padding: 2rem;
+      }
+      .video-wrapper {
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .content-card {
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      }
+      .nav-links a {
+        text-decoration: none;
+      }
+    </style>
   </head>
+
   <body>
-    <header>
-      <p>Course:</p>
-      <h2>{{ course.title }}</h2>
+    <div class="container my-5">
 
-      <p>Module:</p>
-      <h3>{{ module.title }}</h3>
-    </header>
+      <!-- ===== Header ===== -->
+      <div class="lesson-header mb-4">
+        <small class="opacity-75">Course</small>
+        <h3 class="fw-bold">{{ course.title }}</h3>
+        <small class="opacity-75">Module</small>
+        <h5>{{ module.title }}</h5>
+      </div>
 
-    <hr />
+      <!-- ===== Main Lesson Card ===== -->
+      <div class="card content-card mb-4">
+        <div class="card-body p-4">
 
-    <!-- ===================== -->
-    <!-- Lesson Content Area -->
-    <!-- ===================== -->
-    <main>
-      <h1>{{ lesson.title }}</h1>
-      <div
-        class="video-container"
-        style="width: 100%; max-width: 800px; margin: 0 auto"
-      >
-        {% if lesson.video_url %}
-        <video
-          src="{{ lesson.video_url.url }}"
-          class="object-fit-contain w-100 h-auto"
-          autoplay
-          controls
-          style="background-color: #000"
-        ></video>
+          <h1 class="fw-bold mb-4">{{ lesson.title }}</h1>
+
+          {% if lesson.video_url %}
+          <div class="video-wrapper mb-4">
+            <video
+              src="{{ lesson.video_url.url }}"
+              class="w-100"
+              controls
+            ></video>
+          </div>
+          {% endif %}
+
+          {% if lesson.lesson_type == 'text' %}
+          <h5 class="text-muted">Lesson Content</h5>
+          <p>{{ lesson.content }}</p>
+
+          {% elif lesson.lesson_type == 'html' %}
+          <h5 class="text-muted">Lesson Content</h5>
+          {{ lesson.content|safe }}
+
+          {% elif lesson.lesson_type == 'pdf' %}
+          <h5 class="text-muted">Document</h5>
+          {% if lesson.document_file %}
+          <a href="{{ lesson.document_file.url }}" target="_blank" class="btn btn-outline-primary">
+            📄 View / Download PDF
+          </a>
+          {% else %}
+          <p class="text-muted">No document uploaded.</p>
+          {% endif %}
+
+          {% elif lesson.lesson_type == 'link' %}
+          <h5 class="text-muted">External Resource</h5>
+          {% if lesson.external_link %}
+          <a href="{{ lesson.external_link }}" target="_blank" class="btn btn-outline-success">
+            🔗 Open Resource
+          </a>
+          {% else %}
+          <p class="text-muted">Link not available.</p>
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ===== Extra Info ===== -->
+      <div class="card content-card mb-4">
+        <div class="card-body p-4">
+          <div class="row">
+            <div class="col-md-6">
+              {% if lesson.transcripts %}
+              <h6>Transcript</h6>
+              <p>{{ lesson.transcripts }}</p>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {% if lesson.attachments %}
+              <h6>Attachments</h6>
+              <a href="{{ lesson.attachments.url }}" download class="btn btn-sm btn-secondary">
+                ⬇ Download Attachment
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          <p class="mt-3 text-muted">⏱ Duration: {{ lesson.duration_minutes }} minutes</p>
+        </div>
+      </div>
+
+      <!-- ===== Progress Actions ===== -->
+      {% if user.is_authenticated and user.userprofile.role == "student" %}
+        {% if enrollment %}
+          {% if lesson_progress and lesson_progress.is_completed %}
+            <div class="alert alert-success">✅ You have completed this lesson</div>
+          {% else %}
+            <form method="POST" action="{% url 'lesson_complete' lesson.id %}">
+              {% csrf_token %}
+              <button class="btn btn-success btn-lg">✔ Mark as Complete</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <div class="alert alert-warning">
+            You must enroll in this course to track progress.
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <!-- ===== Navigation ===== -->
+      <div class="d-flex justify-content-between align-items-center mt-4 nav-links">
+        {% if previous_lesson %}
+        <a class="btn btn-outline-secondary" href="{% url 'lesson_detail' previous_lesson.id %}">
+          ← {{ previous_lesson.title }}
+        </a>
+        {% else %}
+        <span></span>
+        {% endif %}
+
+        {% if next_lesson %}
+        <a class="btn btn-outline-primary" href="{% url 'lesson_detail' next_lesson.id %}">
+          {{ next_lesson.title }} →
+        </a>
         {% endif %}
       </div>
 
-      <!-- Lesson Type Rendering -->
-      {% if lesson.lesson_type == 'text' %}
-      <h4>Text Lesson</h4>
-      <p>{{ lesson.content }}</p>
+      <!-- ===== Footer ===== -->
+      <footer class="text-center text-muted mt-5">
+        <p>Last accessed: {{ progress.last_accessed }}</p>
+        {% if enrollment %}
+        <p>You are enrolled in this course.</p>
+        {% else %}
+        <p>You are not enrolled.</p>
+        {% endif %}
+      </footer>
 
-      {% elif lesson.lesson_type == 'html' %}
-      <h4>HTML Lesson</h4>
-      {{ lesson.content|safe }} {% elif lesson.lesson_type == 'pdf' %}
-      <h4>Document</h4>
-      {% if lesson.document_file %}
-      <p>
-        <a href="{{ lesson.document_file.url }}" target="_blank">
-          View / Download Document
-        </a>
-      </p>
-      {% else %}
-      <p>No document uploaded.</p>
-      {% endif %} {% elif lesson.lesson_type == 'link' %}
-      <h4>External Resource</h4>
-      {% if lesson.external_link %}
-      <a href="{{ lesson.external_link }}" target="_blank">
-        Open External Link
-      </a>
-      {% else %}
-      <p>Link not available.</p>
-      {% endif %} {% endif %}
-    </main>
-
-    <hr />
-
-    <section>
-      {% if lesson.transcripts %}
-      <h3>Transcript</h3>
-      <p>{{ lesson.transcripts }}</p>
-      {% endif %} {% if lesson.attachments %}
-      <h3>Attachments</h3>
-      <a href="{{ lesson.attachments.url }}" download> Download Attachment </a>
-      {% endif %}
-
-      <p>Duration: {{ lesson.duration_minutes }} minutes</p>
-    </section>
-
-    <hr />
-
-    {% if user.is_authenticated and user.userprofile.role == "student" %} 
-    {% if enrollment %} 
-    {% if lesson_progress and lesson_progress.is_completed %}
-    <div class="alert alert-success">You have completed this lesson</div>
-
-    {% else %}
-    <form method="POST" action="{% url 'lesson_complete' lesson.id %}">
-      {% csrf_token %}
-      <button class="btn btn-success">Mark as complete</button>
-    </form>
-    {% endif %} 
-    {% else %}
-    <div class="alert alert-warning">
-      You must enroll in this course to track progress.
     </div>
-    {% endif %} 
-    {% endif %}
-
-    <nav>
-      {% if previous_lesson %}
-      <a href="{% url 'lesson_detail' previous_lesson.id %}">
-        ← Previous Lesson: {{ previous_lesson.title }}
-      </a>
-      {% endif %}
-
-      <br /><br />
-
-      {% if next_lesson %}
-      <a href="{% url 'lesson_detail' next_lesson.id %}">
-        Next Lesson: {{ next_lesson.title }} →
-      </a>
-      {% endif %}
-    </nav>
-
-    <hr />
-
-    <footer>
-      <p>Last accessed: {{ progress.last_accessed }}</p>
-
-      {% if enrollment %}
-      <p>You are enrolled in this course.</p>
-      {% else %}
-      <p>You are not enrolled.</p>
-      {% endif %}
-    </footer>
   </body>
 </html>

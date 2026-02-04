@@ -3,16 +3,113 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Module - Teacher</title>
+    <title>Create Module - {{ course.title }}</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #f4f7fb;
+      }
+      .page-header {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: #fff;
+        border-radius: 12px;
+        padding: 2rem;
+      }
+      .form-card {
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      }
+    </style>
   </head>
+
   <body>
-    <h2>Create Module for "{{course.title}}"</h2>
+    <div class="container my-5">
 
-    <form method="POST">
-      {% csrf_token %} {{form.as_p}}
-      <button type="submit">Create Module</button>
-    </form>
+      <!-- ===== Header ===== -->
+      <div class="page-header mb-4">
+        <h2 class="fw-bold mb-1">📦 Create New Module</h2>
+        <p class="mb-0 opacity-75">
+          Course: <strong>{{ course.title }}</strong>
+        </p>
+      </div>
 
-    <a href="{% url 'teacher_course_detail' course.id %}">Back</a>
+      <!-- ===== Form Card ===== -->
+      <div class="card form-card">
+        <div class="card-body p-4">
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <!-- Module Title -->
+            <div class="mb-3">
+              <label class="form-label">Module Title</label>
+              <input 
+                type="text" 
+                name="title" 
+                class="form-control" 
+                placeholder="Enter module title"
+                value="{{ form.title.value|default_if_none:'' }}"
+                required
+              >
+              {% if form.title.errors %}
+                <div class="text-danger small">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Module Order -->
+            <div class="mb-3">
+              <label class="form-label">Module Order</label>
+              <input 
+                type="number" 
+                name="order" 
+                class="form-control" 
+                placeholder="e.g. 1"
+                value="{{ form.order.value|default_if_none:'' }}"
+              >
+              {% if form.order.errors %}
+                <div class="text-danger small">{{ form.order.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Publish Toggle -->
+            <div class="form-check mb-4">
+              <input 
+                type="checkbox" 
+                name="is_published" 
+                class="form-check-input" 
+                id="id_is_published"
+                {% if form.is_published.value %}checked{% endif %}
+              >
+              <label class="form-check-label" for="id_is_published">
+                Publish this module
+              </label>
+              {% if form.is_published.errors %}
+                <div class="text-danger small">{{ form.is_published.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <a href="{% url 'teacher_course_detail' course.id %}" class="btn btn-outline-secondary">
+                ← Back to Course
+              </a>
+
+              <button type="submit" class="btn btn-primary btn-lg">
+                ➕ Create Module
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
   </body>
 </html>

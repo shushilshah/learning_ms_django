@@ -17,14 +17,14 @@ class CourseForm(forms.ModelForm):
 class ModuleForm(forms.ModelForm):
     class Meta:
         model = Module
-        fields = ['course', 'title', 'order', 'is_published']
+        fields = ['title', 'order', 'is_published']  # here if using form.as_p in template then must include 'course' field if not then exclude that
 
 
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['module', 'title', 'lesson_type', 'content',
-                  'external_link', 'order', 'is_published', 'duration_minutes']
+        fields = ['title', 'lesson_type', 'content',
+                  'external_link', 'order', 'is_published', 'duration_minutes']  # also here if using form.as_p in template then include 'module' field if not then exclude
 
     def clean(self):
         cleaned_data = super().clean()

@@ -3,16 +3,166 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Lesson - Teacher</title>
-  </head>
-  <body>
-    <h2>Create Lesson</h2>
-    <p>Course: <b>{{course.title}}</b> Module: <b>{{module.title}}</b></p>
+    <title>Create Lesson - {{ course.title }}</title>
 
-    <form method="POST">
-      {% csrf_token %} {{form.as_p}}
-      <button type="submit">Create Lesson</button>
-    </form>
-    <a href="{% url 'teacher_course_detail' course.id %}">Back</a>
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #f4f7fb;
+      }
+      .page-header {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: #fff;
+        border-radius: 12px;
+        padding: 2rem;
+      }
+      .form-card {
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container my-5">
+
+      <!-- ===== Header ===== -->
+      <div class="page-header mb-4">
+        <h2 class="fw-bold mb-1">📘 Create New Lesson</h2>
+        <p class="mb-0 opacity-90">
+          Course: <strong>{{ course.title }}</strong> •
+          Module: <strong>{{ module.title }}</strong>
+        </p>
+      </div>
+
+      <!-- ===== Form Card ===== -->
+      <div class="card form-card">
+        <div class="card-body p-4">
+
+          <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Lesson Title</strong></label>
+              <input type="text" name="title" class="form-control"
+                value="{{ form.title.value|default_if_none:'' }}"
+                placeholder="Enter lesson title" required>
+              {% if form.title.errors %}
+                <div class="text-danger small">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Lesson Type -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Lesson Type</strong></label>
+              <select name="lesson_type" class="form-select">
+                {% for val, label in form.lesson_type.field.choices %}
+                  <option value="{{ val }}" {% if form.lesson_type.value == val %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if form.lesson_type.errors %}
+                <div class="text-danger small">{{ form.lesson_type.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Lesson Content / Text</strong></label>
+              <textarea name="content" class="form-control" rows="5"
+                placeholder="Write lesson content here...">{{ form.content.value|default_if_none:'' }}</textarea>
+              {% if form.content.errors %}
+                <div class="text-danger small">{{ form.content.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- External Link -->
+            <div class="mb-3">
+              <label class="form-label"><strong>External Link</strong></label>
+              <input type="url" name="external_link" class="form-control"
+                value="{{ form.external_link.value|default_if_none:'' }}"
+                placeholder="https://example.com">
+              {% if form.external_link.errors %}
+                <div class="text-danger small">{{ form.external_link.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Transcripts -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Transcript</strong></label>
+              <textarea name="transcripts" class="form-control" rows="3"
+                placeholder="Add video transcript here...">{{ form.transcripts.value|default_if_none:'' }}</textarea>
+              {% if form.transcripts.errors %}
+                <div class="text-danger small">{{ form.transcripts.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Order -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Lesson Order</strong></label>
+              <input type="number" name="order" class="form-control"
+                value="{{ form.order.value|default_if_none:'' }}"
+                placeholder="e.g. 1">
+              {% if form.order.errors %}
+                <div class="text-danger small">{{ form.order.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Duration -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Duration (minutes)</strong></label>
+              <input type="number" name="duration_minutes" class="form-control"
+                value="{{ form.duration_minutes.value|default_if_none:'' }}"
+                placeholder="e.g. 10">
+              {% if form.duration_minutes.errors %}
+                <div class="text-danger small">{{ form.duration_minutes.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Attachments -->
+            <div class="mb-3">
+              <label class="form-label"><strong>Attachments</strong></label>
+              <input type="file" name="attachments" class="form-control">
+              {% if form.attachments.errors %}
+                <div class="text-danger small">{{ form.attachments.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Publish -->
+            <div class="form-check mb-4">
+              <input type="checkbox" name="is_published" class="form-check-input"
+                id="id_is_published" {% if form.is_published.value %}checked{% endif %}>
+              <label class="form-check-label" for="id_is_published">
+                Publish this lesson
+              </label>
+              {% if form.is_published.errors %}
+                <div class="text-danger small">{{ form.is_published.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <a href="{% url 'teacher_course_detail' course.id %}" class="btn btn-outline-secondary">
+                ← Back to Course
+              </a>
+
+              <button type="submit" class="btn btn-primary btn-lg">
+                ➕ Create Lesson
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
   </body>
 </html>

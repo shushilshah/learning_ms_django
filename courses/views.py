@@ -364,6 +364,8 @@ def create_lesson(request, module_id):
             lesson.module = module
             lesson.save()
             return redirect('teacher_course_detail', course_id=course.id)
+        else:
+            print(form.errors)
 
     else:
         form = LessonForm()
