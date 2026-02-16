@@ -92,6 +92,120 @@
         transform: translateY(-6px);
       }
 
+
+
+      
+      /* ===== Floating Chatbot ===== */
+      #chat-toggle {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        background: #7c3aed;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 999;
+        transition: 0.3s;
+      }
+
+      #chat-toggle:hover {
+        transform: scale(1.08);
+      }
+
+      #chat-window {
+        position: fixed;
+        bottom: 55px;
+        right: 10px;
+        width: 340px;
+        height: 460px;
+        background: white;
+        border-radius: 16px;
+        display: none;
+        flex-direction: column;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        overflow: hidden;
+        z-index: 999;
+      }
+
+      #chat-header {
+        background: #7c3aed;
+        color: white;
+        padding: 12px 15px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      #close-chat {
+        cursor: pointer;
+      }
+
+      #chat-messages {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #chat-input-area {
+        display: flex;
+        border-top: 1px solid #eee;
+      }
+
+      #chat-input-area input {
+        flex: 1;
+        border: none;
+        padding: 10px;
+        outline: none;
+      }
+
+      #chat-input-area button {
+        border: none;
+        background: #7c3aed;
+        color: white;
+        padding: 0 16px;
+        cursor: pointer;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(5px);}
+  to {opacity:1; transform:translateY(0);}
+}
+
+/* USER → RIGHT */
+.user-message {
+  align-self: flex-end;
+  background: #7c3aed;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+/* AI → LEFT */
+.ai-message {
+  align-self: flex-start;
+  background: #f3f4f6;
+  color: #111827;
+  border-bottom-left-radius: 4px;
+}
      
       @media (max-width: 768px) {
         .sidebar {
@@ -171,6 +285,7 @@
       </a>
       </div>
 
+
       <!-- Main Content -->
       <div class="main-content">
         <h4 class="mb-1 text-center">
@@ -195,6 +310,24 @@
       
   </div>
 </div>
+
+    <!----==== Floating Chat Icon ------>
+    <div id="chat-toggle">💬</div>
+
+    <!------- Chat Window------>
+    <div id="chat-window">
+      <div id="chat-header">
+        AI Assistant
+        <span id="close-chat">✖</span>
+      </div>
+
+      <div id='chat-messages'></div>
+
+      <div id="chat-input-area">
+        <input type="text" id="userInput" placeholder="Ask something....." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
@@ -242,6 +375,57 @@
       socket.onerror = function(e){
         console.log("websocket error", e);
       };
+
+
+         const chatToggle = document.getElementById("chat-toggle");
+    const chatWindow = document.getElementById("chat-window");
+    const closeChat = document.getElementById("close-chat");
+    
+    chatToggle.onclick = () => {
+      chatWindow.style.display = "flex";
+    };
+    
+    closeChat.onclick = () => {
+      chatWindow.style.display = "none";
+    };
+    
+    async function sendMessage() {
+
+      const input = document.getElementById("userInput");
+
+      const message = input.value.trim();
+
+
+      if (!message) return;
+
+  
+      const messages = document.getElementById("chat-messages");
+      messages.innerHTML += `<div class="message user-message"> ${message}</div>`;
+      input.value = "";
+      
+      const response = await fetch("/api/chatbot/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+      });
+      
+      const data = await response.json();
+      messages.innerHTML += `<div class="message ai-message"> ${data.reply}</div>`;
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Enter key sending feature
+    const inputField = document.getElementById("userInput");
+    
+    inputField.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // prevent page reload
+        sendMessage();
+    }
+});
+
 
     </script>
     {% block extra_js %}{% endblock %}

@@ -202,7 +202,8 @@ LOGOUT_REDIRECT_URL = '/login/'
 # For local development
 
 
-
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
 # deployment
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
 EMAIL_HOST = os.getenv("EMAIL_HOST")

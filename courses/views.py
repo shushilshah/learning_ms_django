@@ -1118,3 +1118,40 @@ def add_question(request, quiz_id):
         return redirect("Thank you")
 
     return render(request, "quizzes/teacher_add_question.html", {"quiz": quiz})
+
+
+
+
+
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import google.generativeai as genai
+import os
+import json
+from django.http import JsonResponse
+# from django.views.decorators.http import require_POST
+
+
+genai.configure(api_key=settings.GEMINI_API_KEY)
+
+
+@csrf_exempt
+def chatbot_api(request):
+    if request.method == 'GET':
+        return JsonResponse({"message": "Chatbot is running"})
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        message = data.get("message")
+
+        model = genai.GenerativeModel(settings.GEMINI_MODEL)
+
+        response = model.generate_content(
+            f"You are a helpful LMS assistant.\nUser: {message}"
+        )
+
+        reply = response.text
+
+        return JsonResponse({"reply": reply})
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)
+

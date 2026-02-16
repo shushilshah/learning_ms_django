@@ -48,5 +48,6 @@ urlpatterns = [
     path("quiz/<int:quiz_id>/start/", views.start_quiz, name='start_quiz'),
     path("attempt/<int:quiz_id>/", views.take_quiz, name='take_quiz'),
     path("attempt/<int:attempt_id>/submit/", views.submit_quiz, name='submit_quiz'),
-    path("attempt/<int:attempt_id>/result/", views.quiz_result, name="quiz_result")
+    path("attempt/<int:attempt_id>/result/", views.quiz_result, name="quiz_result"),
+    path("api/chatbot/", views.chatbot_api, name="chatbot_api")
 ]
