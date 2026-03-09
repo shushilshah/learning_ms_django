@@ -24,7 +24,7 @@ class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
         fields = ['title', 'lesson_type', 'content',
-                  'external_link', 'order', 'is_published', 'duration_minutes']  # also here if using form.as_p in template then include 'module' field if not then exclude
+                  'external_link', 'order', 'is_published', 'duration_minutes', 'attachments']  # also here if using form.as_p in template then include 'module' field if not then exclude
 
     def clean(self):
         cleaned_data = super().clean()
@@ -108,3 +108,9 @@ class AdminNotificationForm(forms.ModelForm):
     class Meta:
         model = Notification
         fields = ("title", "message")
+
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'username']
