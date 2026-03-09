@@ -129,7 +129,7 @@
             <!-- Attachments -->
             <div class="mb-3">
               <label class="form-label"><strong>Attachments</strong></label>
-              <input type="file" name="attachments" class="form-control">
+              {{form.attachments}}
               {% if form.attachments.errors %}
                 <div class="text-danger small">{{ form.attachments.errors }}</div>
               {% endif %}
